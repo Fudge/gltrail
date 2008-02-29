@@ -73,6 +73,7 @@ public:
 
   QHash<QString,Element *> in;
   QHash<QString,Element *> out;
+  QList<Element *> activities;
 };
 
 typedef QHash<QString,Element *> Elements;

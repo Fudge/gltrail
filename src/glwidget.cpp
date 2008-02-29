@@ -48,6 +48,9 @@ GLWidget::GLWidget(QWidget *parent)
   forces = false;
 
   aspect = 1.0;
+
+  x = -10.0;
+  y = -10.0;
 }
 
 
@@ -110,6 +113,10 @@ void GLWidget::paintGL()
   glTranslatef(0.0, 0.0, 0.0);
   glColor3f(1.0, 0.4, 0.4);
 
+  if( !dragging() ) {
+    selected = NULL;
+  }
+
   for(Elements::iterator iter = elements.begin(); iter != elements.end(); ++iter) {
     Elements::iterator iter2 = iter;
     iter2++;
@@ -127,6 +134,16 @@ void GLWidget::paintGL()
     }
 
     (*iter)->update();
+
+    if( button == Qt::LeftButton && selected != NULL && selected == (*iter) ) {
+      selected->x = x;
+      selected->y = y;
+      selected->vx = 0;
+      selected->vy = 0;
+      selected->ax = 0;
+      selected->ay = 0;
+    }
+
     (*iter)->render(this);
   }
 
@@ -199,7 +216,20 @@ void GLWidget::keyPressEvent(QKeyEvent *event) {
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
+  button = event->button();
+  if( button == Qt::NoButton ) {
+    selected = NULL;
+  }
+  event->accept();
+  cout << "Mouse press!" << endl;
+}
 
+void GLWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+  button = Qt::NoButton;
+  selected = NULL;
+  cout << "Mouse release!" << endl;
+  event->accept();
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)

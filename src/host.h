@@ -6,7 +6,8 @@
 #include <QProcess>
 #include <QColor>
 
-#include "glwidget.h"
+
+class GLWidget;
 
 class Host : public QObject {
 

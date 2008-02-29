@@ -24,6 +24,7 @@
 #include <QtOpenGL>
 
 class Host;
+class Element;
 
 /**
         @author Erlend Simonsen <mr@fudgie.org>
@@ -51,11 +52,16 @@ public:
    float getHeight() const { return height; };
    float getAspect() const { return aspect; };
 
+   bool dragging() const { return selected != NULL && button == Qt::LeftButton; };
+   void setSelected(Element *e) { selected = e; };
+   Element *getSelected(void) { return selected; };
+
 protected:
    void initializeGL();
    void paintGL();
    void resizeGL(int width, int height);
    void mousePressEvent(QMouseEvent *event);
+   void mouseReleaseEvent(QMouseEvent *event);
    void mouseMoveEvent(QMouseEvent *event);
    void keyPressEvent(QKeyEvent *event);
 
@@ -69,9 +75,12 @@ protected:
    float x;
    float y;
 
+   int  button;
+
    bool lines;
    bool forces;
 
+   Element *selected;
 };
 
 #endif

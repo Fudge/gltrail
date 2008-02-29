@@ -52,12 +52,14 @@ Element::~Element()
 }
 
 void Element::add_link_in(Element *e) {
-  if( e != NULL && !in.contains( e->name() ) ) {
-    in[e->name()] = e;
-    std::cout << "[" << host->getDomain().toStdString() << "] ";
-    cout << "Rel [" << name().toStdString() << "] <- [" << e->name().toStdString() << "] created." << endl;
+  if( e != NULL ) {
+    if(!in.contains( e->name() ) ) {
+      in[e->name()] = e;
+      std::cout << "[" << host->getDomain().toStdString() << "] ";
+      cout << "Rel [" << name().toStdString() << "] <- [" << e->name().toStdString() << "] created." << endl;
+    }
+    activities << e;
   }
-
   messages++;
 }
 
@@ -123,17 +125,24 @@ void Element::update(void) {
 }
 
 void Element::render(GLWidget *gl) {
-  GLfloat r = size / 250;
+  GLfloat r = size / 200;
   GLfloat vy1 = y + r;
   GLfloat vx1 = x;
 
   bool hover = fabs(gl->getX() - x) <= r*2 && fabs(gl->getY() - y) <= r*2;
+  
+  if(hover) {
+    if( gl->getSelected() == NULL ) 
+      gl->setSelected(this);
+    glColor4f(1.0, 1.0, 1.0, 1.0);
+  } else {
+    gl->qglColor( host->getColor() );
+  }
 
-  gl->qglColor( host->getColor() );
   glEnable(GL_LINE_SMOOTH);
   glBegin(GL_LINE_STRIP);
 
-  for(GLfloat angle = 0.0f; angle <= (2.0f*3.14159); angle += 0.1f) {
+  for(GLfloat angle = 0.0f; angle <= (2.01f*M_PI); angle += 0.15f) {
     glVertex3f(vx1, vy1, 0.0);
     vx1 = x + r * sin(angle);
     vy1 = y + r * cos(angle);
@@ -143,7 +152,7 @@ void Element::render(GLWidget *gl) {
   glDisable(GL_LINE_SMOOTH);
 
   if( gl->showLines() || hover ) {
-    gl->qglColor( host->getColor().dark(300) );
+    gl->qglColor( host->getColor().darker(300) );
 
     for(Elements::iterator it = in.begin(); it != in.end(); ++it) {
       glBegin(GL_LINES);
@@ -165,8 +174,17 @@ void Element::render(GLWidget *gl) {
     int xi =  (int) ((1.0 + x) / 2.0 * gl->getWidth() );
     int xy =  (int) (( gl->getAspect() - y) / (2 * gl->getAspect()) * gl->getHeight() - r - 5.0);
     gl->renderText(xi,xy, QString("[%1] %2").arg( QString::number(rate * 60.0).left(4) ).arg(name()) );
-
   }
+
+  if( activities.size() > 0 && rand() % 30 == 1) {
+    Element *e = activities.takeFirst();
+    gl->qglColor( host->getColor().lighter(120) );
+    glBegin(GL_LINES);
+    glVertex3f(x,y,0.0);
+    glVertex3f(e->x, e->y, 0);
+    glEnd();
+  }
+
 }
 
 void Element::repulsive_check(GLWidget *gl, Element *e) {
@@ -202,7 +220,7 @@ void Element::repulsive_check(GLWidget *gl, Element *e) {
       shown = true;
     }
   }
-  if( d < CUTOFF * e->size ) {
+  if( d < CUTOFF * e->size) {
     e->repulsive_force(this, d, -dx, -dy);
 
     if( gl->showForces() && !shown ) {
@@ -241,7 +259,7 @@ void Element::attractive_check(GLWidget *gl, Element *e) {
 
 void Element::repulsive_force(Element *e, double d, float dx, float dy) {
   float ed = (d - CUTOFF * size);
-  ed *= log(size) * 0.05 + 1.0;
+  ed *= log(size) * 0.5 + 1.0;
 
   float fx = ed / d * dx;
   float fy = ed / d * dy;

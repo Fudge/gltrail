@@ -2,6 +2,7 @@
 
 #include <QStringList>
 #include <iostream>
+#include "glwidget.h"
 
 void Host::start(void) {
   proc = new QProcess( this );
