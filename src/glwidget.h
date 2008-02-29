@@ -41,6 +41,16 @@ public:
 
    void addRelation(Host *h, QString &url, QString &ref);
 
+   bool showLines() const { return lines; };
+   bool showForces() const { return forces; };
+
+   float getX() const { return x; };
+   float getY() const { return y; };
+
+   float getWidth() const { return width; };
+   float getHeight() const { return height; };
+   float getAspect() const { return aspect; };
+
 protected:
    void initializeGL();
    void paintGL();
@@ -55,6 +65,12 @@ protected:
    float aspect;
    int width;
    int height;
+
+   float x;
+   float y;
+
+   bool lines;
+   bool forces;
 
 };
 

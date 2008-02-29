@@ -44,6 +44,8 @@ GLWidget::GLWidget(QWidget *parent)
   BackgroundReader *bg = new BackgroundReader(&elements);
   bg->start();
 
+  lines = false;
+  forces = false;
 
   aspect = 1.0;
 }
@@ -109,6 +111,22 @@ void GLWidget::paintGL()
   glColor3f(1.0, 0.4, 0.4);
 
   for(Elements::iterator iter = elements.begin(); iter != elements.end(); ++iter) {
+    Elements::iterator iter2 = iter;
+    iter2++;
+    while( iter2 != elements.end() ) {
+      (*iter)->repulsive_check(this, *iter2);
+      ++iter2;
+    }
+
+    for( Elements::iterator it = (*iter)->in.begin(); it != (*iter)->in.end(); ++it) {
+      (*iter)->attractive_check(this, *it);
+    }
+
+    for( Elements::iterator it = (*iter)->out.begin(); it != (*iter)->out.end(); ++it) {
+      (*iter)->attractive_check(this, *it);
+    }
+
+    (*iter)->update();
     (*iter)->render(this);
   }
 
@@ -137,32 +155,12 @@ void GLWidget::paintGL()
 //     cout << "Elements[" << elements.size() << "]" << endl;
 //   }
 
+  glColor4f(1.0, 1.0, 1.0, 1.0);
   renderText(10, 10, QString("Elements : ").append(QString::number(elements.size()) ) );
 
 }
 
 void GLWidget::timerEvent(QTimerEvent *event) {
-  for(Elements::iterator iter = elements.begin(); iter != elements.end(); ++iter) {
-    (*iter)->update();
-
-    Elements::iterator iter2 = iter;
-    iter2++;
-    while( iter2 != elements.end() ) {
-      (*iter)->repulsive_check(*iter2);
-//                      iter2->repulsive_check(*iter);
-      ++iter2;
-    }
-
-    for( Elements::iterator it = (*iter)->in.begin(); it != (*iter)->in.end(); ++it) {
-      (*iter)->attractive_check(*it);
-    }
-
-    for( Elements::iterator it = (*iter)->out.begin(); it != (*iter)->out.end(); ++it) {
-      (*iter)->attractive_check(*it);
-    }
-
-  }
-
   updateGL();
 
 }
@@ -190,7 +188,10 @@ void GLWidget::keyPressEvent(QKeyEvent *event) {
   if( event->key() == Qt::Key_Escape ) {
     exit(1);
   } else if( event->key() == Qt::Key_Space ) {
-    // Toggle lines
+    lines = !lines;
+  } else if( event->key() == Qt::Key_V ) {
+    forces = !forces;
+    cout << "Forces " << forces << endl;
   } else {
     event->ignore();
   }
@@ -203,7 +204,10 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-  cout << "x[" << event->x() << "], y[" << event->y() << "]" << endl;
+  x = 2.0 * event->x() / width - 1.0;
+  y = aspect - (2.0 * aspect) * event->y() / (float) height;
+
+  //  cout << "x: " << x << ", y: " << y << endl;
 }
 
 void GLWidget::addRelation(Host *h, QString &url, QString &ref) {

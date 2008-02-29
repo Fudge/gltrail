@@ -45,8 +45,8 @@ public:
   void render(GLWidget *gl);
   void update(void);
   void update_stats(void);
-  void repulsive_check(Element *e);
-  void attractive_check(Element *e);
+  void repulsive_check(GLWidget *gl, Element *e);
+  void attractive_check(GLWidget *gl, Element *e);
   void repulsive_force(Element *e, double d, float dx, float dy);
   void attractive_force(Element *e, double d, float dx, float dy);
 
