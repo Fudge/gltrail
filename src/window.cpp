@@ -30,13 +30,12 @@ Hosts hosts;
 Window::Window(QWidget *parent)
  : QWidget(parent)
 {
-   glWidget = new GLWidget();
-   QHBoxLayout *mainLayout = new QHBoxLayout;
-   mainLayout->addWidget(glWidget);
-   setLayout(mainLayout);
-   setWindowTitle("GLTrail 0.01");
+  glWidget = new GLWidget(this, &hosts);
+  glWidget->show();
 
-   readSettings(glWidget);
+  setWindowTitle("GLTrail 0.01");
+
+  readSettings(glWidget);
 }
 
 
@@ -50,7 +49,7 @@ void Window::readSettings(GLWidget *gl) {
   settings.beginGroup("hosts");
   QStringList rels = settings.allKeys();
   settings.endGroup();
-  
+
   for( int i = 0; i < rels.size(); i++ ) {
     QString hostName = rels.at(i);
 

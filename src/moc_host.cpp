@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'host.h'
 **
-** Created: Fri Feb 29 15:33:11 2008
+** Created: Sat Mar 1 16:06:09 2008
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.3.2)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -22,18 +22,19 @@ static const uint qt_meta_data_Host[] = {
        1,       // revision
        0,       // classname
        0,    0, // classinfo
-       1,   10, // methods
+       2,   10, // methods
        0,    0, // properties
        0,    0, // enums/sets
 
  // slots: signature, parameters, type, tag, flags
        6,    5,    5,    5, 0x0a,
+      23,    5,    5,    5, 0x0a,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_Host[] = {
-    "Host\0\0readFromStdout()\0"
+    "Host\0\0readFromStdout()\0readFromStderr()\0"
 };
 
 const QMetaObject Host::staticMetaObject = {
@@ -62,8 +63,9 @@ int Host::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: readFromStdout(); break;
+        case 1: readFromStderr(); break;
         }
-        _id -= 1;
+        _id -= 2;
     }
     return _id;
 }

@@ -34,16 +34,17 @@ class GLWidget : public QGLWidget
    Q_OBJECT
 
 public:
-   GLWidget(QWidget *parent = 0);
-   ~GLWidget();
+  GLWidget(QWidget *parent, QList<Host *> *h);
+  ~GLWidget();
 
    QSize minimumSizeHint() const;
    QSize sizeHint() const;
 
-   void addRelation(Host *h, QString &url, QString &ref);
+   void addRelation(Host *h, QString &url, QString &ref, bool external = false);
 
    bool showLines() const { return lines; };
    bool showForces() const { return forces; };
+   int  showSize() const { return sizeMode; };
 
    float getX() const { return x; };
    float getY() const { return y; };
@@ -55,6 +56,8 @@ public:
    bool dragging() const { return selected != NULL && button == Qt::LeftButton; };
    void setSelected(Element *e) { selected = e; };
    Element *getSelected(void) { return selected; };
+
+   QMap<QString,int> stats;
 
 protected:
    void initializeGL();
@@ -79,8 +82,12 @@ protected:
 
    bool lines;
    bool forces;
+   int  sizeMode;
 
    Element *selected;
+
+   double lastTick;
+
 };
 
 #endif

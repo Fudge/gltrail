@@ -28,29 +28,34 @@ using namespace std;
 #include <list>
 #include "background_reader.h"
 #include "host.h"
+#include <sys/time.h>
 
 Elements elements;
+Nodes    nodes;
+
 
 int frames = 0;
 int last_time = 0;
 
-GLWidget::GLWidget(QWidget *parent)
+GLWidget::GLWidget(QWidget *parent, Hosts *h)
  : QGLWidget(parent)
 {
-  startTimer(16);
+  startTimer(1);
   setFocusPolicy(Qt::StrongFocus);
   setMouseTracking(true);
 
-  BackgroundReader *bg = new BackgroundReader(&elements);
+  BackgroundReader *bg = new BackgroundReader(h, &elements);
   bg->start();
 
   lines = false;
   forces = false;
+  sizeMode = 0;
 
   aspect = 1.0;
 
   x = -10.0;
   y = -10.0;
+  lastTick = 0;
 }
 
 
@@ -65,7 +70,7 @@ QSize GLWidget::minimumSizeHint() const
 
 QSize GLWidget::sizeHint() const
 {
-   return QSize(1024,1024);
+   return QSize(512,512);
 }
 
 void GLWidget::initializeGL()
@@ -97,11 +102,6 @@ void GLWidget::initializeGL()
 
    srand(time(NULL));
 
-   //   for( int i = 0; i < NUM; i++ )
-   //     elements.push_back( Element() );
-
-//    last_time = glutGet(GLUT_ELAPSED_TIME);
-
 }
 
 void GLWidget::paintGL()
@@ -113,24 +113,40 @@ void GLWidget::paintGL()
   glTranslatef(0.0, 0.0, 0.0);
   glColor3f(1.0, 0.4, 0.4);
 
+  stats["Elements"] = 0;
+  stats["Lines"] = 0;
+  stats["Links"] = 0;
+  stats["Repulsive Check"] = 0;
+  stats["Repulsive Force"] = 0;
+  stats["Attractive Check"] = 0;
+  stats["Attractive Force"] = 0;
+  stats["Bounding Box Check"] = 0;
+
   if( !dragging() ) {
     selected = NULL;
   }
 
-  for(Elements::iterator iter = elements.begin(); iter != elements.end(); ++iter) {
-    Elements::iterator iter2 = iter;
+  for(Nodes::iterator iter = nodes.begin(); iter != nodes.end(); ++iter) {
+    stats["Elements"] += 1;
+    Nodes::iterator iter2 = iter;
     iter2++;
-    while( iter2 != elements.end() ) {
-      (*iter)->repulsive_check(this, *iter2);
+    while( iter2 != nodes.end() ) {
+      //      if( (*iter)->contains(this,*iter2) || (*iter2)->contains(this,*iter) ) {
+        (*iter)->repulsive_check(this, *iter2);
+        stats["Repulsive Check"] += 1;
+        //      }
       ++iter2;
     }
 
-    for( Elements::iterator it = (*iter)->in.begin(); it != (*iter)->in.end(); ++it) {
+    for( Nodes::iterator it = (*iter)->nodes_in.begin(); it != (*iter)->nodes_in.end(); ++it) {
       (*iter)->attractive_check(this, *it);
+      stats["Attractive Check"] += 1;
+      stats["Links"] += 1;
     }
 
-    for( Elements::iterator it = (*iter)->out.begin(); it != (*iter)->out.end(); ++it) {
+    for( Nodes::iterator it = (*iter)->nodes_out.begin(); it != (*iter)->nodes_out.end(); ++it) {
       (*iter)->attractive_check(this, *it);
+      stats["Attractive Check"] += 1;
     }
 
     (*iter)->update();
@@ -147,33 +163,45 @@ void GLWidget::paintGL()
     (*iter)->render(this);
   }
 
-  glBegin(GL_POINTS);
-  glEnd();
-
   glPopMatrix();
 
   frames++;
 
-//   if( glutGet(GLUT_ELAPSED_TIME) - last_time > 1000 ) {
-//     cout << "FPS: " << frames << endl;
-//     frames = 0;
-//     last_time = glutGet(GLUT_ELAPSED_TIME);
-//     int num = rand() % elements.size();
-
-//     Element e;
-
-//     list<Element>::iterator it = elements.begin();
-
-//     for( int i = 0; i < num; i++ ) {
-//       it++;
-//     }
-//     e.add_link_in( *it );
-//     elements.push_back( e );
-//     cout << "Elements[" << elements.size() << "]" << endl;
-//   }
-
   glColor4f(1.0, 1.0, 1.0, 1.0);
-  renderText(10, 10, QString("Elements : ").append(QString::number(elements.size()) ) );
+  int text_y = 10;
+  QString text("%1 %2");
+  for( QMap<QString,int>::iterator it = stats.begin(); it != stats.end(); ++it ) {
+    renderText(2, text_y, text.arg( QString::number(it.value()), 5, QChar('0')).arg(it.key() ));
+    text_y += 11;
+  }
+
+  text = QString("Mode [%1]");
+  switch(sizeMode) {
+  case 0:
+    text = text.arg("Rate");
+    break;
+  case 1:
+    text = text.arg("Links IN");
+    break;
+  case 2:
+    text = text.arg("Links OUT");
+    break;
+  case 3:
+    text = text.arg("Links TOTAL");
+    break;
+  }
+
+  renderText(2, (int) (height * 0.9), text);
+
+  timeval tim;
+  gettimeofday(&tim, NULL);
+  double curTick = tim.tv_sec * 1000 + tim.tv_usec / 1000;
+  if( curTick - lastTick > 5000 ) {
+    stats["FPS"] = frames / 5.0;
+    lastTick = curTick;
+    frames = 0;
+  }
+
 
 }
 
@@ -206,9 +234,16 @@ void GLWidget::keyPressEvent(QKeyEvent *event) {
     exit(1);
   } else if( event->key() == Qt::Key_Space ) {
     lines = !lines;
+    cout << "Lines " << lines << endl;
   } else if( event->key() == Qt::Key_V ) {
     forces = !forces;
     cout << "Forces " << forces << endl;
+  } else if( event->key() == Qt::Key_B ) {
+    sizeMode++;
+    if( sizeMode > 3 ) {
+      sizeMode = 0;
+    }
+    cout << "SizeMode " << sizeMode << endl;
   } else {
     event->ignore();
   }
@@ -240,15 +275,24 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
   //  cout << "x: " << x << ", y: " << y << endl;
 }
 
-void GLWidget::addRelation(Host *h, QString &url, QString &ref) {
+void GLWidget::addRelation(Host *h, QString &url, QString &ref, bool external) {
 
   if( elements.contains(h->getDomain() + url) == false ) {
-    elements[h->getDomain() + url] = new Element(h, url);
+    QColor color = h->getColor();
+    elements[h->getDomain() + url] = new Element(h, url, color);
+    nodes.push_back( elements[h->getDomain() + url] );
   }
 
   if( ref != "-" && !ref.isEmpty() ) {
-    if( elements.contains(h->getDomain() + ref) == false ) 
-      elements[h->getDomain() + ref] = new Element(h, ref);
+    if( elements.contains(h->getDomain() + ref) == false ) {
+      QColor color = h->getColor();
+      if( external ) {
+        color = color.darker(300);
+      }
+
+      elements[h->getDomain() + ref] = new Element(h, ref, color);
+      nodes.push_back( elements[h->getDomain() + ref] );
+    }
 
     elements[h->getDomain() + url]->add_link_in( elements[h->getDomain() + ref] );
     elements[h->getDomain() +ref]->add_link_out( elements[h->getDomain() + url] );

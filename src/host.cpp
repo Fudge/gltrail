@@ -6,12 +6,16 @@
 
 void Host::start(void) {
   proc = new QProcess( this );
-  connect( proc, SIGNAL(readyRead()), this, SLOT(readFromStdout()) );
+
+  proc->setProcessChannelMode(QProcess::SeparateChannels);
+
+  connect( proc, SIGNAL(readyReadStandardOutput()), this, SLOT(readFromStdout()) );
+  connect( proc, SIGNAL(readyReadStandardError()), this, SLOT(readFromStderr()) );
   QString cmd = getCommandString();
   std::cout << "[" << domain.toStdString() << "] exec[" << cmd.toStdString() << "]" << std::endl;
   proc->start( getCommandString() );
   proc->waitForStarted();
-}  
+}
 
 
 QString Host::getCommandString() {
@@ -29,6 +33,9 @@ QString Host::getCommandString() {
 
 void Host::readFromStdout(void ) {
   char buf[2048];
+
+  proc->setReadChannel(QProcess::StandardOutput);
+
   while( proc->canReadLine() ) {
     qint64 len = proc->readLine(buf, sizeof(buf));
     if( len != -1 ) {
@@ -37,29 +44,55 @@ void Host::readFromStdout(void ) {
       QRegExp rx(pattern);
 
       if( rx.indexIn(buf) > -1 ) {
-        QString url = rx.cap(5).split(" ")[1];
+        QString url = rx.cap(5);
+
+        if( url.contains(" ") ) {
+          url = url.split(" ")[1];
+        }
+
         QString referrer = rx.cap(8);
 
-	url = url.split("?")[0];
+        url = url.split("?")[0];
 
-	if( referrer.contains( QRegExp("http://(.*\\.)?" + domain) ) || referrer.startsWith("/") )  {
-	    referrer = referrer.split("?")[0];
-	}
+        if( url.contains( QRegExp("\\.(jpg|png|jpeg|gif|swf|js|css|jar|ico)$", Qt::CaseInsensitive) ) ) {
+          continue;
+        }
 
-	referrer.replace("http://", "");
-	referrer.replace( QRegExp("^(.*\\.)?" + domain), "");
-	std::cout << "[" << domain.toStdString() << "]" <<  url.toStdString() << " <- " << (const char*) referrer.toLatin1() << std::endl;
+        if( referrer.contains( QRegExp("http://(.*\\.)?" + domain) ) || referrer.startsWith("/") )  {
+            referrer = referrer.split("?")[0];
+        }
 
-	if( url == referrer ) {
-	  referrer = "";
-	}
+        referrer.replace( QRegExp("^http://(.*\\.)?" + domain), "");
+        bool external = false;
+        if( referrer.contains("http://") ) {
+          external = true;
+          referrer.replace("http://", "");
+        }
+        //        std::cout << "[" << domain.toStdString() << "] " <<  url.toStdString() << " <- " << (const char*) referrer.toLatin1() << std::endl;
 
-        gl->addRelation(this, url, referrer);
+        if( url == referrer ) {
+          referrer = "";
+        }
+
+        gl->addRelation(this, url, referrer, external);
 
       } else {
-        std::cout << "[ssh] " << buf;
+        std::cout << "[" << domain.toStdString() << "] UNKNOWN [" << buf << "]" << std::endl;
       }
       //      glWidget->addRandomElement();
+    }
+  }
+}
+
+void Host::readFromStderr(void) {
+  char buf[2048];
+  std::cout << "STDERR!\n";
+  proc->setReadChannel(QProcess::StandardError);
+
+  while( proc->canReadLine() ) {
+    qint64 len = proc->readLine(buf, sizeof(buf));
+    if( len != -1 ) {
+      std::cout << "[" << domain.toStdString() << "] STDERR [" << buf << "]" << std::endl;
     }
   }
 }

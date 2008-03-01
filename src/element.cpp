@@ -24,7 +24,7 @@
 
 using namespace std;
 
-Element::Element(Host *h, QString name)
+Element::Element(Host *h, QString name, QColor col)
 {
   x = 1.0 - rand() % 1000 / 500.0;
   y = 1.0 - rand() % 1000 / 500.0;
@@ -43,6 +43,9 @@ Element::Element(Host *h, QString name)
 
   host = h;
   m_name = name;
+  color = col;
+  radius = 0.1;
+
   std::cout << "[" << host->getDomain().toStdString() << "] ";
   cout << "Element [" << name.toStdString() << "] created." << endl;
 }
@@ -55,8 +58,9 @@ void Element::add_link_in(Element *e) {
   if( e != NULL ) {
     if(!in.contains( e->name() ) ) {
       in[e->name()] = e;
-      std::cout << "[" << host->getDomain().toStdString() << "] ";
-      cout << "Rel [" << name().toStdString() << "] <- [" << e->name().toStdString() << "] created." << endl;
+      nodes_in.push_back(e);
+      //      std::cout << "[" << host->getDomain().toStdString() << "] ";
+      //      cout << "Rel [" << name().toStdString() << "] <- [" << e->name().toStdString() << "] created." << endl;
     }
     activities << e;
   }
@@ -66,8 +70,9 @@ void Element::add_link_in(Element *e) {
 void Element::add_link_out(Element *e) {
   if( e != NULL && !out.contains( e->name() ) ) {
     out[e->name()] = e;
-    std::cout << "[" << host->getDomain().toStdString() << "] ";
-    cout << "Rel [" << name().toStdString() << "] -> [" << e->name().toStdString() << "] created." << endl;
+    nodes_out.push_back(e);
+    //    std::cout << "[" << host->getDomain().toStdString() << "] ";
+    //    cout << "Rel [" << name().toStdString() << "] -> [" << e->name().toStdString() << "] created." << endl;
   }
 
   messages++;
@@ -78,13 +83,39 @@ void Element::update_stats(void) {
   rate = (rate * 299.0 + messages) / 300.0;
   messages = 0;
 
-  size = rate * 60.0 / 8.0;
-  //  size = in.size() * 0.2;
+  switch( host->getGLWidget()->showSize() ) {
+  case 0:
+    size = rate * 60.0 / 8.0;
+    break;
+  case 1:
+    size = in.size() * 0.2;
+    break;
+  case 2:
+    size = out.size() * 0.2;
+    break;
+  case 3:
+    size = (out.size() + in.size()) * 0.2;
+    break;
+  }
+
+  realSize = size;
+
+  float scale = 1.0;
+  if( size > host->getMaxSize() ) {
+    host->setMaxSize( size );
+  } else {
+    scale = size / host->getMaxSize();
+  }
+
+  size *= scale;
 
   if( size > 5.0 )
     size = 5.0;
+
   if( size < 1.0 )
     size = 1.0;
+
+  radius = CUTOFF * size * 0.5;
 }
 
 void Element::update(void) {
@@ -125,28 +156,33 @@ void Element::update(void) {
 }
 
 void Element::render(GLWidget *gl) {
-  GLfloat r = size / 200;
-  GLfloat vy1 = y + r;
-  GLfloat vx1 = x;
+  GLfloat r = 0.004 + (size - 1.0) / 100;
 
-  bool hover = fabs(gl->getX() - x) <= r*2 && fabs(gl->getY() - y) <= r*2;
-  
+  bool hover = fabs(gl->getX() - x) <= r*1.5f && fabs(gl->getY() - y) <= r * 1.5f;
+
   if(hover) {
-    if( gl->getSelected() == NULL ) 
+    if( gl->getSelected() == NULL )
       gl->setSelected(this);
     glColor4f(1.0, 1.0, 1.0, 1.0);
   } else {
-    gl->qglColor( host->getColor() );
+    gl->qglColor( color );
   }
 
   glEnable(GL_LINE_SMOOTH);
   glBegin(GL_LINE_STRIP);
 
-  for(GLfloat angle = 0.0f; angle <= (2.01f*M_PI); angle += 0.15f) {
+  GLfloat vy1 = y + r;
+  GLfloat vx1 = x;
+
+  for(GLfloat angle = 0.0f; angle <= (2.0f*M_PI); angle += 0.25f) {
+    gl->stats["Lines"] += 1;
     glVertex3f(vx1, vy1, 0.0);
     vx1 = x + r * sin(angle);
     vy1 = y + r * cos(angle);
   }
+  gl->stats["Lines"] += 2;
+  glVertex3f(vx1, vy1, 0.0);
+  glVertex3f(x, y+r, 0.0);
 
   glEnd();
   glDisable(GL_LINE_SMOOTH);
@@ -155,6 +191,7 @@ void Element::render(GLWidget *gl) {
     gl->qglColor( host->getColor().darker(300) );
 
     for(Elements::iterator it = in.begin(); it != in.end(); ++it) {
+      gl->stats["Lines"] += 1;
       glBegin(GL_LINES);
       glVertex3f(x,y,0.0);
       glVertex3f((*it)->x, (*it)->y, 0);
@@ -162,6 +199,7 @@ void Element::render(GLWidget *gl) {
     }
 
     for(Elements::iterator it = out.begin(); it != out.end(); ++it) {
+      gl->stats["Lines"] += 1;
       glBegin(GL_LINES);
       glVertex3f(x,y,0.0);
       glVertex3f((*it)->x, (*it)->y, 0);
@@ -173,18 +211,29 @@ void Element::render(GLWidget *gl) {
     glColor4f(1.0, 1.0, 1.0, 1.0);
     int xi =  (int) ((1.0 + x) / 2.0 * gl->getWidth() );
     int xy =  (int) (( gl->getAspect() - y) / (2 * gl->getAspect()) * gl->getHeight() - r - 5.0);
-    gl->renderText(xi,xy, QString("[%1] %2").arg( QString::number(rate * 60.0).left(4) ).arg(name()) );
+    gl->renderText(xi,xy, QString("[%1] %2").arg( QString::number(realSize).left(5) ).arg(name()) );
   }
 
   if( activities.size() > 0 && rand() % 30 == 1) {
     Element *e = activities.takeFirst();
     gl->qglColor( host->getColor().lighter(120) );
+    gl->stats["Lines"] += 1;
     glBegin(GL_LINES);
     glVertex3f(x,y,0.0);
     glVertex3f(e->x, e->y, 0);
     glEnd();
   }
 
+}
+
+bool Element::contains(GLWidget *gl, Element *e) {
+  gl->stats["Bounding Box Check"] += 1;
+
+  return( e->x >= x - radius
+          && e->x <= x + radius
+          && e->y >= y - radius
+          && e->y <= y + radius
+          );
 }
 
 void Element::repulsive_check(GLWidget *gl, Element *e) {
@@ -206,12 +255,12 @@ void Element::repulsive_check(GLWidget *gl, Element *e) {
 
   double d = sqrt(d2);
 
-//      cout << "Distance[" << d << "]" << endl;
-
   if( d < CUTOFF * size) {
+    gl->stats["Repulsive Force"] += 1;
     repulsive_force(e, d, dx, dy);
 
     if( gl->showForces() ) {
+      gl->stats["Lines"] += 1;
       glColor3f(0.2, 0.2, 0.2);
       glBegin(GL_LINES);
       glVertex3f(x,y,0.0);
@@ -221,9 +270,11 @@ void Element::repulsive_check(GLWidget *gl, Element *e) {
     }
   }
   if( d < CUTOFF * e->size) {
+    gl->stats["Repulsive Force"] += 1;
     e->repulsive_force(this, d, -dx, -dy);
 
     if( gl->showForces() && !shown ) {
+      gl->stats["Lines"] += 1;
       glColor3f(0.2, 0.2, 0.2);
       glBegin(GL_LINES);
       glVertex3f(x,y,0.0);
@@ -252,6 +303,7 @@ void Element::attractive_check(GLWidget *gl, Element *e) {
   double d = sqrt(d2);
 
   if( d > CUTOFF/4  ) {
+    gl->stats["Attractive Force"] += 1;
     attractive_force(e, d, dx, dy);
     //    e->attractive_force(this, d, -dx, -dy);
   }

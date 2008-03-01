@@ -38,13 +38,14 @@ class Element{
 
 public:
   Element() {};
-  Element(Host *h, QString name);
+  Element(Host *h, QString name, QColor col);
 
   virtual ~Element();
 
   void render(GLWidget *gl);
   void update(void);
   void update_stats(void);
+  bool contains(GLWidget *gl, Element *e);
   void repulsive_check(GLWidget *gl, Element *e);
   void attractive_check(GLWidget *gl, Element *e);
   void repulsive_force(Element *e, double d, float dx, float dy);
@@ -64,19 +65,29 @@ public:
   float ax; // X Acceleration
   float ay; // Y Acceleration
   float size;
+  float radius;
+  float realSize;
 
   int   messages;
   float rate;
 
   Host *host;
   QString m_name;
+  QColor color;
 
   QHash<QString,Element *> in;
   QHash<QString,Element *> out;
+
+  std::list<Element *> nodes_in;
+  std::list<Element *> nodes_out;
+
+
   QList<Element *> activities;
+
 };
 
 typedef QHash<QString,Element *> Elements;
+typedef std::list<Element *> Nodes;
 
 inline bool operator==(const Element &e, const Element &f) {
   return f.name() == e.name();

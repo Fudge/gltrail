@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include "element.h"
+#include "host.h"
 
 /**
         @author Erlend Simonsen <mr@fudgie.org>
@@ -14,7 +15,7 @@ class BackgroundReader : public QThread
 
 public:
 
-  BackgroundReader(Elements *e);
+  BackgroundReader(Hosts *h, Elements *e);
   ~BackgroundReader() {};
 
 protected:
@@ -23,6 +24,7 @@ protected:
 
 
 private:
+  Hosts *hosts;
   Elements *elements;
 
 };
