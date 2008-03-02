@@ -11,8 +11,8 @@ TEMPLATE = app
 CONFIG += warn_on \
           thread \
           qt \
- release \
- opengl
+          release \
+          opengl
 TARGET = ../bin/gltrail
 
 HEADERS += element.h \

@@ -26,6 +26,30 @@
 class Host;
 class Element;
 
+#define STAT_FPS               0
+#define STAT_LINES             1
+#define STAT_ELEMENTS          2
+#define STAT_LINKS             3
+#define STAT_LISTS             4
+#define STAT_REPULSIVE_CHECKS  5
+#define STAT_ATTRACTIVE_CHECKS 6
+#define STAT_REPULSIVE_FORCE   7
+#define STAT_ATTRACTIVE_FORCE  8
+#define STAT_MAX               9
+
+static QString statNames[] = {
+  QString("FPS"),
+  QString("Lines"),
+  QString("Elements"),
+  QString("Links"),
+  QString("Lists"),
+  QString("Repulsive Checks"),
+  QString("Repulsive Force"),
+  QString("Attractive Checks"),
+  QString("Attractive Force")
+};
+
+
 /**
         @author Erlend Simonsen <mr@fudgie.org>
 */
@@ -45,6 +69,7 @@ public:
    bool showLines() const { return lines; };
    bool showForces() const { return forces; };
    int  showSize() const { return sizeMode; };
+   bool showStats() const { return statsMode; };
 
    float getX() const { return x; };
    float getY() const { return y; };
@@ -57,7 +82,9 @@ public:
    void setSelected(Element *e) { selected = e; };
    Element *getSelected(void) { return selected; };
 
-   QMap<QString,int> stats;
+   int stats[STAT_MAX];
+
+   GLuint circle;
 
 protected:
    void initializeGL();
@@ -82,6 +109,7 @@ protected:
 
    bool lines;
    bool forces;
+   bool statsMode;
    int  sizeMode;
 
    Element *selected;

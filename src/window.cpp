@@ -30,7 +30,13 @@ Hosts hosts;
 Window::Window(QWidget *parent)
  : QWidget(parent)
 {
+
   glWidget = new GLWidget(this, &hosts);
+
+  QHBoxLayout* layout = new QHBoxLayout();
+  layout->addWidget(glWidget);
+  setLayout(layout);
+
   glWidget->show();
 
   setWindowTitle("GLTrail 0.01");

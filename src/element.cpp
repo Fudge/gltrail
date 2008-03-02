@@ -126,10 +126,8 @@ void Element::update(void) {
   vx *= DAMPENING;
   vy *= DAMPENING;
 
-  float size2 = size * size;
-
-  x += vx / (size2);
-  y += vy / (size2);
+  x += vx / (size * size);
+  y += vy / (size * size);
 
   ax = 0.0;
   ay = 0.0;
@@ -153,53 +151,75 @@ void Element::update(void) {
     vy = -vy;
     ay = -ay;
   }
+
+  minX = x - radius;
+  maxX = x + radius;
+  minY = y - radius;
+  maxY = y + radius;
+
 }
 
 void Element::render(GLWidget *gl) {
-  GLfloat r = 0.004 + (size - 1.0) / 100;
+   GLfloat r = 0.004 + (size - 1.0) / 100;
 
-  bool hover = fabs(gl->getX() - x) <= r*1.5f && fabs(gl->getY() - y) <= r * 1.5f;
+   bool hover = fabs(gl->getX() - x) <= r*1.5f && fabs(gl->getY() - y) <= r * 1.5f;
 
-  if(hover) {
-    if( gl->getSelected() == NULL )
-      gl->setSelected(this);
-    glColor4f(1.0, 1.0, 1.0, 1.0);
-  } else {
-    gl->qglColor( color );
-  }
+   if(hover) {
+     if( gl->getSelected() == NULL )
+       gl->setSelected(this);
+     glColor4f(1.0, 1.0, 1.0, 1.0);
+   } else {
+     gl->qglColor( color );
+   }
 
-  glEnable(GL_LINE_SMOOTH);
-  glBegin(GL_LINE_STRIP);
+   if( size == 1.0 ) {
+     glTranslatef(x,y,0.0);
+     glEnable(GL_LINE_SMOOTH);
+     glCallList(gl->circle);
+     glDisable(GL_LINE_SMOOTH);
+     glTranslatef(-x,-y,0.0);
+     //     gl->stats["Call Lists"] += 1;
+   } else {
+     glEnable(GL_LINE_SMOOTH);
+     glBegin(GL_LINE_STRIP);
 
-  GLfloat vy1 = y + r;
-  GLfloat vx1 = x;
+     GLfloat vy1 = y + r;
+     GLfloat vx1 = x;
 
-  for(GLfloat angle = 0.0f; angle <= (2.0f*M_PI); angle += 0.25f) {
-    gl->stats["Lines"] += 1;
-    glVertex3f(vx1, vy1, 0.0);
-    vx1 = x + r * sin(angle);
-    vy1 = y + r * cos(angle);
-  }
-  gl->stats["Lines"] += 2;
-  glVertex3f(vx1, vy1, 0.0);
-  glVertex3f(x, y+r, 0.0);
+     for(GLfloat angle = 0.0f; angle <= (2.0f*M_PI); angle += 0.25f) {
+       //       gl->stats["Lines"] += 1;
+       glVertex3f(vx1, vy1, 0.0);
+       vx1 = x + r * sin(angle);
+       vy1 = y + r * cos(angle);
+     }
+     //     gl->stats["Lines"] += 2;
+     glVertex3f(vx1, vy1, 0.0);
+     glVertex3f(x, y+r, 0.0);
 
-  glEnd();
-  glDisable(GL_LINE_SMOOTH);
+     glEnd();
+     glDisable(GL_LINE_SMOOTH);
+   }
 
-  if( gl->showLines() || hover ) {
-    gl->qglColor( host->getColor().darker(300) );
+//     glPointSize(size*2);
+//     glBegin(GL_POINTS);
+//     glVertex3f(x,y,0.0);
+//     glEnd();
 
-    for(Elements::iterator it = in.begin(); it != in.end(); ++it) {
-      gl->stats["Lines"] += 1;
-      glBegin(GL_LINES);
-      glVertex3f(x,y,0.0);
-      glVertex3f((*it)->x, (*it)->y, 0);
-      glEnd();
-    }
 
-    for(Elements::iterator it = out.begin(); it != out.end(); ++it) {
-      gl->stats["Lines"] += 1;
+
+   if( gl->showLines() || hover ) {
+     gl->qglColor( host->getColor().darker(300) );
+
+     for(Elements::iterator it = in.begin(); it != in.end(); ++it) {
+       //       gl->stats["Lines"] += 1;
+       glBegin(GL_LINES);
+       glVertex3f(x,y,0.0);
+       glVertex3f((*it)->x, (*it)->y, 0);
+       glEnd();
+     }
+
+     for(Elements::iterator it = out.begin(); it != out.end(); ++it) {
+       //       gl->stats["Lines"] += 1;
       glBegin(GL_LINES);
       glVertex3f(x,y,0.0);
       glVertex3f((*it)->x, (*it)->y, 0);
@@ -217,7 +237,7 @@ void Element::render(GLWidget *gl) {
   if( activities.size() > 0 && rand() % 30 == 1) {
     Element *e = activities.takeFirst();
     gl->qglColor( host->getColor().lighter(120) );
-    gl->stats["Lines"] += 1;
+    //    gl->stats["Lines"] += 1;
     glBegin(GL_LINES);
     glVertex3f(x,y,0.0);
     glVertex3f(e->x, e->y, 0);
@@ -227,12 +247,11 @@ void Element::render(GLWidget *gl) {
 }
 
 bool Element::contains(GLWidget *gl, Element *e) {
-  gl->stats["Bounding Box Check"] += 1;
-
-  return( e->x >= x - radius
-          && e->x <= x + radius
-          && e->y >= y - radius
-          && e->y <= y + radius
+  //  gl->stats["Bounding Box Check"] += 1;
+  return( e->x >= minX
+          && e->x <= maxX
+          && e->y >= minY
+          && e->y <= maxY
           );
 }
 
@@ -256,11 +275,11 @@ void Element::repulsive_check(GLWidget *gl, Element *e) {
   double d = sqrt(d2);
 
   if( d < CUTOFF * size) {
-    gl->stats["Repulsive Force"] += 1;
+    //    gl->stats["Repulsive Force"] += 1;
     repulsive_force(e, d, dx, dy);
 
     if( gl->showForces() ) {
-      gl->stats["Lines"] += 1;
+      //      gl->stats["Lines"] += 1;
       glColor3f(0.2, 0.2, 0.2);
       glBegin(GL_LINES);
       glVertex3f(x,y,0.0);
@@ -270,11 +289,11 @@ void Element::repulsive_check(GLWidget *gl, Element *e) {
     }
   }
   if( d < CUTOFF * e->size) {
-    gl->stats["Repulsive Force"] += 1;
+    //    gl->stats["Repulsive Force"] += 1;
     e->repulsive_force(this, d, -dx, -dy);
 
     if( gl->showForces() && !shown ) {
-      gl->stats["Lines"] += 1;
+      //      gl->stats["Lines"] += 1;
       glColor3f(0.2, 0.2, 0.2);
       glBegin(GL_LINES);
       glVertex3f(x,y,0.0);
@@ -303,9 +322,8 @@ void Element::attractive_check(GLWidget *gl, Element *e) {
   double d = sqrt(d2);
 
   if( d > CUTOFF/4  ) {
-    gl->stats["Attractive Force"] += 1;
+    //    gl->stats["Attractive Force"] += 1;
     attractive_force(e, d, dx, dy);
-    //    e->attractive_force(this, d, -dx, -dy);
   }
 }
 

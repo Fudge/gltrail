@@ -23,7 +23,7 @@
 
 #include "window.h"
 
-int main(int argc, char *argv[])
+ int main(int argc, char *argv[])
 {
   QCoreApplication::setOrganizationName("Fudgie");
   QCoreApplication::setOrganizationDomain("www.fudgie.org");

@@ -68,6 +68,11 @@ public:
   float radius;
   float realSize;
 
+  float minX;
+  float maxX;
+  float minY;
+  float maxY;
+
   int   messages;
   float rate;
 
@@ -78,8 +83,8 @@ public:
   QHash<QString,Element *> in;
   QHash<QString,Element *> out;
 
-  std::list<Element *> nodes_in;
-  std::list<Element *> nodes_out;
+  QLinkedList<Element *> nodes_in;
+  QLinkedList<Element *> nodes_out;
 
 
   QList<Element *> activities;
@@ -87,7 +92,7 @@ public:
 };
 
 typedef QHash<QString,Element *> Elements;
-typedef std::list<Element *> Nodes;
+typedef QLinkedList<Element *> Nodes;
 
 inline bool operator==(const Element &e, const Element &f) {
   return f.name() == e.name();
