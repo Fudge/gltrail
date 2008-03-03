@@ -34,6 +34,7 @@ Window::Window(QWidget *parent)
   glWidget = new GLWidget(this, &hosts);
 
   QHBoxLayout* layout = new QHBoxLayout();
+  layout->setContentsMargins(0,0,0,0);
   layout->addWidget(glWidget);
   setLayout(layout);
 
