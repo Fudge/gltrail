@@ -50,6 +50,7 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
 
   lines = false;
   forces = false;
+  statsMode = false;
   sizeMode = 0;
 
   aspect = 1.0;
@@ -142,23 +143,33 @@ void GLWidget::paintGL()
   }
 
   Nodes::iterator iter;
-  Nodes::iterator iter2;
+  //  Nodes::iterator iter2;
   Nodes::iterator it;
 
   for(iter = nodes.begin(); iter != nodes.end(); ++iter) {
     stats[STAT_ELEMENTS] += 1;
-    iter2 = iter;
-    iter2++;
 
     Element *e = (*iter);
 
-    while( iter2 != nodes.end() ) {
-      if( e->contains(this,*iter2) || (*iter2)->contains(this,*iter) ) {
-        e->repulsive_check(this, *iter2);
+    QSet<Element*> nodeMapEntries = nodeMap[e->nodeX()][e->nodeY()];
+
+
+    for(QSet<Element *>::iterator iter2 = nodeMapEntries.begin(); iter2 != nodeMapEntries.end(); iter2++ ) {
+        (*iter2)->repulsive_check(this, e);
         stats[STAT_REPULSIVE_CHECKS] += 1;
-      }
-      ++iter2;
-     }
+    }
+
+    //    iter2 = iter;
+    //    iter2++;
+
+
+//     while( iter2 != nodes.end() ) {
+//       if( e->contains(this,*iter2) || (*iter2)->contains(this,*iter) ) {
+//         e->repulsive_check(this, *iter2);
+//         stats[STAT_REPULSIVE_CHECKS] += 1;
+//       }
+//       ++iter2;
+//      }
 
      for(it = e->nodes_in.begin(); it != e->nodes_in.end(); ++it) {
        e->attractive_check(this, *it);
@@ -171,7 +182,7 @@ void GLWidget::paintGL()
        stats[STAT_ATTRACTIVE_CHECKS] += 1;
      }
 
-    e->update();
+     e->update(this);
 
      if( button == Qt::LeftButton && selected != NULL && selected == (*iter) ) {
        selected->x = x;
@@ -302,6 +313,17 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
   x = 2.0 * event->x() / width - 1.0;
   y = aspect - (2.0 * aspect) * event->y() / (float) height;
+
+  if(x > 0.999) {
+    x = 0.999;
+  }
+  if(x < -0.999)
+    x = -0.999;
+
+  if(y > 0.999)
+    y = 0.999;
+  if(y < -0.999)
+    y = -0.999;
 
   //  cout << "x: " << x << ", y: " << y << endl;
 }

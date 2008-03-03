@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2008 by Erlend Simonsen   *
- *   mr@fudgie.org   *
+ *   Copyright (C) 2008 by Erlend Simonsen                                 *
+ *   mr@fudgie.org                                                         *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -46,8 +46,8 @@ Element::Element(Host *h, QString name, QColor col)
   color = col;
   radius = 0.1;
 
-  std::cout << "[" << host->getDomain().toStdString() << "] ";
-  cout << "Element [" << name.toStdString() << "] created." << endl;
+  //  std::cout << "[" << host->getDomain().toStdString() << "] ";
+  //  cout << "Element [" << name.toStdString() << "] created." << endl;
 }
 
 Element::~Element()
@@ -118,7 +118,7 @@ void Element::update_stats(void) {
   radius = CUTOFF * size * 0.5;
 }
 
-void Element::update(void) {
+void Element::update(GLWidget *gl) {
 
   vx += ax / SMOOTHING;
   vy += ay / SMOOTHING;
@@ -132,22 +132,22 @@ void Element::update(void) {
   ax = 0.0;
   ay = 0.0;
 
-  if( x > 1.0 ) {
-    x = 1.0;
+  if( x > 0.999 ) {
+    x = 0.999;
     vx = -vx;
     ax = -ax;
-  } else if( x < -1.0 ) {
-    x = -1.0;
+  } else if( x < -0.999 ) {
+    x = -0.999;
     vx = -vx;
     ax = -ax;
   }
 
-  if( y > 1.0 ) {
-    y = 1.0;
+  if( y > 0.999 ) {
+    y = 0.999;
     vy = -vy;
     ay = -ay;
-  } else if( y < -1.0 ) {
-    y = -1.0;
+  } else if( y < -0.999 ) {
+    y = -0.999;
     vy = -vy;
     ay = -ay;
   }
@@ -156,6 +156,77 @@ void Element::update(void) {
   maxX = x + radius;
   minY = y - radius;
   maxY = y + radius;
+
+
+
+  if( fabs(lastX-x) < 0.001 && fabs(lastY-y) < 0.001 && lastSize >= size )
+    return;
+
+  float weight = (lastSize / 2) * CUTOFF / 2;
+
+  int nx = toNode(lastX - weight);
+  int stop_x = toNode(lastX + weight);
+
+  if( stop_x < nx ) {
+    int i = nx;
+    nx = stop_x;
+    stop_x = i;
+  }
+
+  int start_y = toNode(lastY - weight);
+  int stop_y = toNode(lastY + weight);
+
+  if( stop_y < start_y ) {
+    int i = start_y;
+    start_y = stop_y;
+    stop_y = i;
+  }
+
+  while( nx <= stop_x ) {
+    int ny = start_y;
+
+    while( ny <= stop_y ) {
+      gl->nodeMap[nx][ny].remove(this);
+      ny++;
+      //      gl->stats[STAT_NODE_MAP_UPDATES] += 1;
+    }
+    nx++;
+  }
+
+  weight = (size / 2) * CUTOFF / 2;
+
+  nx = toNode(x - weight);
+  stop_x = toNode(x + weight);
+
+  if( stop_x < nx ) {
+    int i = nx;
+    nx = stop_x;
+    stop_x = i;
+  }
+
+  start_y = toNode(y - weight);
+  stop_y = toNode(y + weight);
+
+  if( stop_y < start_y ) {
+    int i = start_y;
+    start_y = stop_y;
+    stop_y = i;
+  }
+
+  while( nx <= stop_x ) {
+    int ny = start_y;
+
+    while( ny <= stop_y ) {
+      gl->nodeMap[nx][ny].insert(this);
+      ny++;
+      gl->stats[STAT_NODE_MAP_UPDATES] += 1;
+    }
+    nx++;
+  }
+
+  lastX = x;
+  lastY = y;
+  lastSize = size;
 
 }
 
@@ -178,7 +249,7 @@ void Element::render(GLWidget *gl) {
      glCallList(gl->circle);
      glDisable(GL_LINE_SMOOTH);
      glTranslatef(-x,-y,0.0);
-     //     gl->stats["Call Lists"] += 1;
+     gl->stats[STAT_LISTS] += 1;
    } else {
      glEnable(GL_LINE_SMOOTH);
      glBegin(GL_LINE_STRIP);
@@ -187,12 +258,12 @@ void Element::render(GLWidget *gl) {
      GLfloat vx1 = x;
 
      for(GLfloat angle = 0.0f; angle <= (2.0f*M_PI); angle += 0.25f) {
-       //       gl->stats["Lines"] += 1;
+       gl->stats[STAT_LINES] += 1;
        glVertex3f(vx1, vy1, 0.0);
        vx1 = x + r * sin(angle);
        vy1 = y + r * cos(angle);
      }
-     //     gl->stats["Lines"] += 2;
+     gl->stats[STAT_LINES] += 2;
      glVertex3f(vx1, vy1, 0.0);
      glVertex3f(x, y+r, 0.0);
 
@@ -211,7 +282,7 @@ void Element::render(GLWidget *gl) {
      gl->qglColor( host->getColor().darker(300) );
 
      for(Elements::iterator it = in.begin(); it != in.end(); ++it) {
-       //       gl->stats["Lines"] += 1;
+       gl->stats[STAT_LINES] += 1;
        glBegin(GL_LINES);
        glVertex3f(x,y,0.0);
        glVertex3f((*it)->x, (*it)->y, 0);
@@ -219,11 +290,11 @@ void Element::render(GLWidget *gl) {
      }
 
      for(Elements::iterator it = out.begin(); it != out.end(); ++it) {
-       //       gl->stats["Lines"] += 1;
-      glBegin(GL_LINES);
-      glVertex3f(x,y,0.0);
-      glVertex3f((*it)->x, (*it)->y, 0);
-      glEnd();
+       gl->stats[STAT_LINES] += 1;
+       glBegin(GL_LINES);
+       glVertex3f(x,y,0.0);
+       glVertex3f((*it)->x, (*it)->y, 0);
+       glEnd();
     }
   }
 
@@ -237,7 +308,7 @@ void Element::render(GLWidget *gl) {
   if( activities.size() > 0 && rand() % 30 == 1) {
     Element *e = activities.takeFirst();
     gl->qglColor( host->getColor().lighter(120) );
-    //    gl->stats["Lines"] += 1;
+    gl->stats[STAT_LINES] += 1;
     glBegin(GL_LINES);
     glVertex3f(x,y,0.0);
     glVertex3f(e->x, e->y, 0);
@@ -275,11 +346,11 @@ void Element::repulsive_check(GLWidget *gl, Element *e) {
   double d = sqrt(d2);
 
   if( d < CUTOFF * size) {
-    //    gl->stats["Repulsive Force"] += 1;
+    gl->stats[STAT_REPULSIVE_FORCE] += 1;
     repulsive_force(e, d, dx, dy);
 
     if( gl->showForces() ) {
-      //      gl->stats["Lines"] += 1;
+      gl->stats[STAT_LINES] += 1;
       glColor3f(0.2, 0.2, 0.2);
       glBegin(GL_LINES);
       glVertex3f(x,y,0.0);
@@ -289,11 +360,11 @@ void Element::repulsive_check(GLWidget *gl, Element *e) {
     }
   }
   if( d < CUTOFF * e->size) {
-    //    gl->stats["Repulsive Force"] += 1;
+    gl->stats[STAT_REPULSIVE_FORCE] += 1;
     e->repulsive_force(this, d, -dx, -dy);
 
     if( gl->showForces() && !shown ) {
-      //      gl->stats["Lines"] += 1;
+      gl->stats[STAT_LINES] += 1;
       glColor3f(0.2, 0.2, 0.2);
       glBegin(GL_LINES);
       glVertex3f(x,y,0.0);
@@ -322,7 +393,7 @@ void Element::attractive_check(GLWidget *gl, Element *e) {
   double d = sqrt(d2);
 
   if( d > CUTOFF/4  ) {
-    //    gl->stats["Attractive Force"] += 1;
+    gl->stats[STAT_ATTRACTIVE_FORCE] += 1;
     attractive_force(e, d, dx, dy);
   }
 }

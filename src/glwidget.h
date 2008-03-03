@@ -26,16 +26,19 @@
 class Host;
 class Element;
 
-#define STAT_FPS               0
-#define STAT_LINES             1
-#define STAT_ELEMENTS          2
-#define STAT_LINKS             3
-#define STAT_LISTS             4
-#define STAT_REPULSIVE_CHECKS  5
-#define STAT_ATTRACTIVE_CHECKS 6
-#define STAT_REPULSIVE_FORCE   7
-#define STAT_ATTRACTIVE_FORCE  8
-#define STAT_MAX               9
+#define NODE_MAP_SIZE           20
+
+#define STAT_FPS                 0
+#define STAT_LINES               1
+#define STAT_ELEMENTS            2
+#define STAT_LINKS               3
+#define STAT_LISTS               4
+#define STAT_REPULSIVE_CHECKS    5
+#define STAT_ATTRACTIVE_CHECKS   6
+#define STAT_REPULSIVE_FORCE     7
+#define STAT_ATTRACTIVE_FORCE    8
+#define STAT_NODE_MAP_UPDATES    9
+#define STAT_MAX                10
 
 static QString statNames[] = {
   QString("FPS"),
@@ -44,9 +47,10 @@ static QString statNames[] = {
   QString("Links"),
   QString("Lists"),
   QString("Repulsive Checks"),
-  QString("Repulsive Force"),
   QString("Attractive Checks"),
-  QString("Attractive Force")
+  QString("Repulsive Force"),
+  QString("Attractive Force"),
+  QString("NodeMap Updates")
 };
 
 
@@ -85,6 +89,7 @@ public:
    int stats[STAT_MAX];
 
    GLuint circle;
+   QSet<Element *> nodeMap[NODE_MAP_SIZE][NODE_MAP_SIZE];
 
 protected:
    void initializeGL();
@@ -115,6 +120,7 @@ protected:
    Element *selected;
 
    double lastTick;
+
 
 };
 

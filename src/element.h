@@ -43,7 +43,7 @@ public:
   virtual ~Element();
 
   void render(GLWidget *gl);
-  void update(void);
+  void update(GLWidget *gl);
   void update_stats(void);
   bool contains(GLWidget *gl, Element *e);
   void repulsive_check(GLWidget *gl, Element *e);
@@ -53,6 +53,21 @@ public:
 
   void add_link_in(Element *e);
   void add_link_out(Element *e);
+
+  int nodeX() const { return (int) ((1.0 + x) / 2.0 * NODE_MAP_SIZE); };
+  int nodeY() const { return (int) ((1.0 + y) / 2.0 * NODE_MAP_SIZE); };
+
+  int toNode(float c) const {
+    int n = (int) ((1.0 + c) / 2.0 * NODE_MAP_SIZE);
+    if( n < 0 )
+      n = 0;
+
+    if( n > NODE_MAP_SIZE - 1) {
+      n = NODE_MAP_SIZE - 1;
+    }
+
+    return n;
+  };
 
   inline QString name(void) const { return m_name; };
 
@@ -73,6 +88,10 @@ public:
   float minY;
   float maxY;
 
+  float lastX;
+  float lastY;
+  float lastSize;
+
   int   messages;
   float rate;
 
@@ -85,7 +104,6 @@ public:
 
   QLinkedList<Element *> nodes_in;
   QLinkedList<Element *> nodes_out;
-
 
   QList<Element *> activities;
 

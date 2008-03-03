@@ -11,7 +11,7 @@ TEMPLATE = app
 CONFIG += warn_on \
           thread \
           qt \
-          release \
+          debug \
           opengl
 TARGET = ../bin/gltrail
 
@@ -21,4 +21,4 @@ glwidget.h \
 background_reader.h \
 host.h
 
-#CONFIG += debug
+CONFIG += debug

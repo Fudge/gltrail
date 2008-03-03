@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'background_reader.h'
 **
-** Created: Sun Mar 2 17:43:19 2008
+** Created: Mon Mar 3 09:51:19 2008
 **      by: The Qt Meta Object Compiler version 59 (Qt 4.3.2)
 **
 ** WARNING! All changes made in this file will be lost!
