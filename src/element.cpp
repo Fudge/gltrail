@@ -157,7 +157,7 @@ void Element::update(GLWidget *gl) {
   minY = y - radius;
   maxY = y + radius;
 
-
+  return;
 
   if( fabs(lastX-x) < 0.001 && fabs(lastY-y) < 0.001 && lastSize >= size )
     return;

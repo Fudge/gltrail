@@ -58,6 +58,8 @@ void Host::readFromStdout(void ) {
           continue;
         }
 
+	url.replace( QRegExp("/index\\.vsp$"), "/" );
+
         if( referrer.contains( QRegExp("http://(.*\\.)?" + domain) ) || referrer.startsWith("/") )  {
             referrer = referrer.split("?")[0];
         }
@@ -73,6 +75,8 @@ void Host::readFromStdout(void ) {
         if( url == referrer ) {
           referrer = "";
         }
+
+	
 
         gl->addRelation(this, url, referrer, external);
 

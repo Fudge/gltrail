@@ -143,7 +143,7 @@ void GLWidget::paintGL()
   }
 
   Nodes::iterator iter;
-  //  Nodes::iterator iter2;
+  Nodes::iterator iter2;
   Nodes::iterator it;
 
   for(iter = nodes.begin(); iter != nodes.end(); ++iter) {
@@ -151,25 +151,25 @@ void GLWidget::paintGL()
 
     Element *e = (*iter);
 
-    QSet<Element*> nodeMapEntries = nodeMap[e->nodeX()][e->nodeY()];
+//     QSet<Element*> nodeMapEntries = nodeMap[e->nodeX()][e->nodeY()];
 
 
-    for(QSet<Element *>::iterator iter2 = nodeMapEntries.begin(); iter2 != nodeMapEntries.end(); iter2++ ) {
-        (*iter2)->repulsive_check(this, e);
-        stats[STAT_REPULSIVE_CHECKS] += 1;
-    }
-
-    //    iter2 = iter;
-    //    iter2++;
-
-
-//     while( iter2 != nodes.end() ) {
-//       if( e->contains(this,*iter2) || (*iter2)->contains(this,*iter) ) {
-//         e->repulsive_check(this, *iter2);
+//     for(QSet<Element *>::iterator iter2 = nodeMapEntries.begin(); iter2 != nodeMapEntries.end(); iter2++ ) {
+//         (*iter2)->repulsive_check(this, e);
 //         stats[STAT_REPULSIVE_CHECKS] += 1;
-//       }
-//       ++iter2;
-//      }
+//     }
+
+        iter2 = iter;
+        iter2++;
+
+
+     while( iter2 != nodes.end() ) {
+       if( e->contains(this,*iter2) || (*iter2)->contains(this,*iter) ) {
+         e->repulsive_check(this, *iter2);
+         stats[STAT_REPULSIVE_CHECKS] += 1;
+       }
+       ++iter2;
+      }
 
      for(it = e->nodes_in.begin(); it != e->nodes_in.end(); ++it) {
        e->attractive_check(this, *it);
