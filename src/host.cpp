@@ -44,17 +44,17 @@ void Host::readFromStdout(void ) {
       QRegExp rx(pattern);
 
       if( rx.indexIn(buf) > -1 ) {
-        QString url = rx.cap(5);
+        QString url = rx.cap(1);
 
         if( url.contains(" ") ) {
           url = url.split(" ")[1];
         }
 
-        QString referrer = rx.cap(8);
+        QString referrer = rx.cap(2);
 
         url = url.split("?")[0];
 
-        if( url.contains( QRegExp("\\.(jpg|png|jpeg|gif|swf|js|css|jar|ico)$", Qt::CaseInsensitive) ) ) {
+        if( url.contains( QRegExp(ignore, Qt::CaseInsensitive) ) ) {
           continue;
         }
 

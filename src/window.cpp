@@ -51,7 +51,7 @@ Window::~Window()
 }
 
 void Window::readSettings(GLWidget *gl) {
-  QSettings settings("ml.ini", QSettings::IniFormat);
+  QSettings settings("gltrail.ini", QSettings::IniFormat);
 
   settings.beginGroup("hosts");
   QStringList rels = settings.allKeys();
@@ -74,6 +74,7 @@ void Window::readSettings(GLWidget *gl) {
     h->setCommand( settings.value("command").toString() );
     h->setArgs( settings.value("args").toString() );
     h->setPattern( settings.value("pattern").toString() );
+    h->setIgnore( settings.value("ignore").toString() );
     h->setColor( settings.value("color").toString() );
 
     h->setGLWidget(gl);

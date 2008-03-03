@@ -1,0 +1,12 @@
+[hosts]
+server1.example.com=example.com
+server2.example.com=example.com
+
+[example.com]
+args=/var/log/apache/access_log
+command=xtail
+user=myuser
+pattern=[\\d\\S.]+ \\S+ \\S+ \\[[^\\]]+\\] \"([^\"]*)\" \\d+ [\\S]+ \"([^\"]+)\" \"[^\"]+\"
+ignore=\\.(jpg|png|jpeg|gif|swf|js|css|jar|ico|mp3)$
+color=#FF4444
+

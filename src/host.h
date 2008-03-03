@@ -25,6 +25,7 @@ class Host : public QObject {
   void setCommand(const QString &c) { command = c; };
   void setArgs(const QString &a)    { args = a; };
   void setPattern(const QString &p) { pattern = p; };
+  void setIgnore(const QString &i) { ignore = i; };
   void setColor(const QString &c)   { color = QColor(c); };
 
   void setGLWidget(GLWidget *glw) { gl = glw; };
@@ -32,6 +33,7 @@ class Host : public QObject {
 
   QString getCommandString( void );
   QString getPattern( void ) { return pattern; };
+  QString getIgnore( void ) { return ignore; };
 
   QString getDomain( void ) const { return domain; };
   QColor getColor( void ) const { return color; };
@@ -59,6 +61,7 @@ public slots:
   QString command;
   QString args;
 
+  QString ignore;
   QString pattern;
   QColor  color;
 
