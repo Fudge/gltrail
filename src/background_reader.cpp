@@ -8,12 +8,12 @@ BackgroundReader::BackgroundReader(Hosts *h, Elements *e) {
 
 void BackgroundReader::run(void ) {
   forever {
-    for(Hosts::iterator it = hosts->begin(); it != hosts->end(); ++it ) {
+    for(Hosts::const_iterator it = hosts->constBegin(); it != hosts->constEnd(); ++it ) {
       (*it)->decayMax();
     }
 
     int num = 0;
-    for(Elements::iterator iter = elements->begin(); iter != elements->end(); ++iter) {
+    for(Elements::const_iterator iter = elements->constBegin(); iter != elements->constEnd(); ++iter) {
       (*iter)->update_stats();
       num ++;
     }

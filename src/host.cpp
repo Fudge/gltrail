@@ -76,8 +76,6 @@ void Host::readFromStdout(void ) {
           referrer = "";
         }
 
-	
-
         gl->addRelation(this, url, referrer, external);
 
       } else {

@@ -51,6 +51,8 @@ public:
   void repulsive_force(Element *e, double d, float dx, float dy);
   void attractive_force(Element *e, double d, float dx, float dy);
 
+  bool expired( void ) { return (totalMessages > 0 && rate < 0.001); };
+
   void add_link_in(Element *e);
   void add_link_out(Element *e);
 
@@ -93,6 +95,7 @@ public:
   float lastSize;
 
   int   messages;
+  int   totalMessages;
   float rate;
 
   Host *host;
@@ -105,7 +108,7 @@ public:
   QLinkedList<Element *> nodes_in;
   QLinkedList<Element *> nodes_out;
 
-  QList<Element *> activities;
+  QLinkedList<Element *> activities;
 
 };
 
@@ -113,11 +116,11 @@ typedef QHash<QString,Element *> Elements;
 typedef QLinkedList<Element *> Nodes;
 
 inline bool operator==(const Element &e, const Element &f) {
-  return f.name() == e.name();
+  return f.name() == e.name() && e.host->getDomain() == f.host->getDomain();
 }
 
 inline uint qHash(const Element &e) {
-  return qHash(e.name());
+  return qHash(e.host->getDomain() + e.name());
 }
 
 

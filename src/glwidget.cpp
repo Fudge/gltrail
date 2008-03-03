@@ -41,7 +41,8 @@ int last_time = 0;
 GLWidget::GLWidget(QWidget *parent, Hosts *h)
   : QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::Rgba | QGL::DirectRendering | QGL::AlphaChannel), parent)
 {
-  startTimer(1);
+  //  startTimer(1);
+  startTimer(16);
   setFocusPolicy(Qt::StrongFocus);
   setMouseTracking(true);
 
@@ -143,33 +144,32 @@ void GLWidget::paintGL()
   }
 
   Nodes::iterator iter;
-  Nodes::iterator iter2;
   Nodes::iterator it;
+
+  Nodes::iterator iter2;
 
   for(iter = nodes.begin(); iter != nodes.end(); ++iter) {
     stats[STAT_ELEMENTS] += 1;
 
     Element *e = (*iter);
 
-//     QSet<Element*> nodeMapEntries = nodeMap[e->nodeX()][e->nodeY()];
+//     QSet<Element*> *nodeMapEntries = &nodeMap[e->nodeX()][e->nodeY()];
 
-
-//     for(QSet<Element *>::iterator iter2 = nodeMapEntries.begin(); iter2 != nodeMapEntries.end(); iter2++ ) {
-//         (*iter2)->repulsive_check(this, e);
-//         stats[STAT_REPULSIVE_CHECKS] += 1;
+//     for(QSet<Element *>::iterator iter2 = nodeMapEntries->begin(); iter2 != nodeMapEntries->end(); iter2++ ) {
+//       (*iter2)->repulsive_check(this, e);
+//       stats[STAT_REPULSIVE_CHECKS] += 1;
 //     }
 
-        iter2 = iter;
-        iter2++;
+    iter2 = iter;
+    iter2++;
 
-
-     while( iter2 != nodes.end() ) {
-       if( e->contains(this,*iter2) || (*iter2)->contains(this,*iter) ) {
-         e->repulsive_check(this, *iter2);
-         stats[STAT_REPULSIVE_CHECKS] += 1;
-       }
-       ++iter2;
+    while( iter2 != nodes.end() ) {
+      if( e->contains(this,*iter2) || (*iter2)->contains(this,*iter) ) {
+        e->repulsive_check(this, *iter2);
+        stats[STAT_REPULSIVE_CHECKS] += 1;
       }
+      ++iter2;
+    }
 
      for(it = e->nodes_in.begin(); it != e->nodes_in.end(); ++it) {
        e->attractive_check(this, *it);
@@ -194,6 +194,54 @@ void GLWidget::paintGL()
      }
 
     e->render(this);
+  }
+
+  for(iter = nodes.begin(); iter != nodes.end(); ++iter) {
+    Element *e = (*iter);
+
+    if( e->expired() ) {
+      cout << "Expired[" << e->name().toStdString() << "][" << e->rate << "]" << endl;
+
+      for(iter2 = nodes.begin(); iter2 != nodes.end(); ++iter2) {
+        Element *e2 = (*iter2);
+
+        //      cout << "Checking vs [" << e2->name().toStdString() << "]" << endl;
+
+        if( e2 == e )
+          continue;
+
+        for( it = e2->nodes_in.begin(); it != e2->nodes_in.end(); ++it ) {
+
+          //          cout << "Comparing [" << (e->host->getDomain() + e->name()).toStdString() << "] to [" << ((*it)->host->getDomain() + (*it)->name()).toStdString() << "]" << endl;
+          if( e == *it ) {
+            cout << "removing[" << e2->name().toStdString() << "] nodes_in" << endl;
+            it = e2->nodes_in.erase(it);
+            e2->in.remove(e2->name());
+          }
+        }
+
+        for( it = e2->nodes_out.begin(); it != e2->nodes_out.end(); ++it ) {
+          if( e == *it ) {
+            cout << "removing[" << e2->name().toStdString() << "] nodes_out" << endl;
+            it = e2->nodes_out.erase(it);
+            e2->out.remove(e2->name());
+          }
+        }
+
+        for( it = e2->activities.begin(); it != e2->activities.end(); ++it ) {
+          if( e == *it ) {
+            cout << "removing[" << e2->name().toStdString() << "] activitites" << endl;
+            it = e2->activities.erase(it);
+          }
+        }
+
+      }
+
+      elements.remove( e->host->getDomain() + e->name() );
+
+      iter = nodes.erase(iter);
+      delete e;
+    }
   }
 
   glPopMatrix();
@@ -314,16 +362,16 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
   x = 2.0 * event->x() / width - 1.0;
   y = aspect - (2.0 * aspect) * event->y() / (float) height;
 
-  if(x > 0.999) {
-    x = 0.999;
+  if(x > 1.0) {
+    x = 1.0;
   }
-  if(x < -0.999)
-    x = -0.999;
+  if(x < -1.0)
+    x = -1.0;
 
-  if(y > 0.999)
-    y = 0.999;
-  if(y < -0.999)
-    y = -0.999;
+  if(y > aspect)
+    y = aspect;
+  if(y < -aspect)
+    y = -aspect;
 
   //  cout << "x: " << x << ", y: " << y << endl;
 }

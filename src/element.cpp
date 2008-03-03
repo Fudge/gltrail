@@ -35,11 +35,12 @@ Element::Element(Host *h, QString name, QColor col)
   ax = 0.0000;
   ay = 0.0000;
 
-  size = (rand() % 5000) / 1000.0 + 1.0;
   size = 1.0;
 
   messages = 0;
+  totalMessages = 0;
   rate = 0.0;
+  realSize = 0.0;
 
   host = h;
   m_name = name;
@@ -52,6 +53,11 @@ Element::Element(Host *h, QString name, QColor col)
 
 Element::~Element()
 {
+  in.clear();
+  out.clear();
+  nodes_in.clear();
+  nodes_out.clear();
+  activities.clear();
 }
 
 void Element::add_link_in(Element *e) {
@@ -80,25 +86,32 @@ void Element::add_link_out(Element *e) {
 
 void Element::update_stats(void) {
 
-  rate = (rate * 299.0 + messages) / 300.0;
+  if( rate == 0.0 ) {
+    rate = messages / 60.0;
+  } else {
+    rate = (rate * 299.0 + messages) / 300.0;
+  }
+  totalMessages += messages;
   messages = 0;
 
   switch( host->getGLWidget()->showSize() ) {
   case 0:
-    size = rate * 60.0 / 8.0;
+    realSize = rate * 60.0;
+    size = realSize;
     break;
   case 1:
-    size = in.size() * 0.2;
+    realSize = nodes_in.size();
+    size = realSize;
     break;
   case 2:
-    size = out.size() * 0.2;
+    realSize = nodes_out.size();
+    size = realSize;
     break;
   case 3:
-    size = (out.size() + in.size()) * 0.2;
+    realSize = (nodes_out.size() + nodes_in.size());
+    size = realSize;
     break;
   }
-
-  realSize = size;
 
   float scale = 1.0;
   if( size > host->getMaxSize() ) {
@@ -107,10 +120,11 @@ void Element::update_stats(void) {
     scale = size / host->getMaxSize();
   }
 
-  size *= scale;
 
   if( size > 5.0 )
     size = 5.0;
+
+  size *= scale;
 
   if( size < 1.0 )
     size = 1.0;
@@ -132,22 +146,22 @@ void Element::update(GLWidget *gl) {
   ax = 0.0;
   ay = 0.0;
 
-  if( x > 0.999 ) {
-    x = 0.999;
+  if( x > 1.0 ) {
+    x = 1.0;
     vx = -vx;
     ax = -ax;
-  } else if( x < -0.999 ) {
-    x = -0.999;
+  } else if( x < -1.0 ) {
+    x = -1.0;
     vx = -vx;
     ax = -ax;
   }
 
-  if( y > 0.999 ) {
-    y = 0.999;
+  if( y > gl->getAspect() ) {
+    y = gl->getAspect();
     vy = -vy;
     ay = -ay;
-  } else if( y < -0.999 ) {
-    y = -0.999;
+  } else if( y < -gl->getAspect() ) {
+    y = -gl->getAspect();
     vy = -vy;
     ay = -ay;
   }
@@ -159,7 +173,7 @@ void Element::update(GLWidget *gl) {
 
   return;
 
-  if( fabs(lastX-x) < 0.001 && fabs(lastY-y) < 0.001 && lastSize >= size )
+  if( fabs(lastX-x) < 0.01 && fabs(lastY-y) < 0.01 && lastSize >= size )
     return;
 
   float weight = (lastSize / 2) * CUTOFF / 2;
@@ -281,7 +295,7 @@ void Element::render(GLWidget *gl) {
    if( gl->showLines() || hover ) {
      gl->qglColor( host->getColor().darker(300) );
 
-     for(Elements::iterator it = in.begin(); it != in.end(); ++it) {
+     for(Nodes::iterator it = nodes_in.begin(); it != nodes_in.end(); ++it) {
        gl->stats[STAT_LINES] += 1;
        glBegin(GL_LINES);
        glVertex3f(x,y,0.0);
@@ -289,7 +303,7 @@ void Element::render(GLWidget *gl) {
        glEnd();
      }
 
-     for(Elements::iterator it = out.begin(); it != out.end(); ++it) {
+     for(Nodes::iterator it = nodes_out.begin(); it != nodes_out.end(); ++it) {
        gl->stats[STAT_LINES] += 1;
        glBegin(GL_LINES);
        glVertex3f(x,y,0.0);
