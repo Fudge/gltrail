@@ -78,9 +78,10 @@ QSize GLWidget::sizeHint() const
 
 void GLWidget::initializeGL()
 {
-  QFont font;
+  QFont font("Terminus");
   font.setPointSize(8);
-
+  font.setStyleHint(QFont::System, QFont::PreferBitmap);
+  font.setFixedPitch(true);
   setFont(font);
 
   qglClearColor( QColor::fromRgbF(0,0,0,0) );

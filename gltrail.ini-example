@@ -8,5 +8,6 @@ command=xtail
 user=myuser
 pattern=[\\d\\S.]+ \\S+ \\S+ \\[[^\\]]+\\] \"([^\"]*)\" \\d+ [\\S]+ \"([^\"]+)\" \"[^\"]+\"
 ignore=\\.(jpg|png|jpeg|gif|swf|js|css|jar|ico|mp3)$
+ignore_url_params=true
 color=#FF4444
 

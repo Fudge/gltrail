@@ -47,6 +47,8 @@ Element::Element(Host *h, QString name, QColor col)
   color = col;
   radius = 0.1;
 
+  showInfo = 3;
+
   //  std::cout << "[" << host->getDomain().toStdString() << "] ";
   //  cout << "Element [" << name.toStdString() << "] created." << endl;
 }
@@ -85,6 +87,8 @@ void Element::add_link_out(Element *e) {
 }
 
 void Element::update_stats(void) {
+
+  lastSize = size;
 
   if( rate == 0.0 ) {
     rate = messages / 60.0;
@@ -130,6 +134,15 @@ void Element::update_stats(void) {
     size = 1.0;
 
   radius = CUTOFF * size * 0.5;
+
+  if( showInfo > 0 ) {
+    showInfo--;
+  }
+
+  if( lastSize < size ) {
+    showInfo += 2;
+  }
+
 }
 
 void Element::update(GLWidget *gl) {
@@ -160,8 +173,8 @@ void Element::update(GLWidget *gl) {
     y = gl->getAspect();
     vy = -vy;
     ay = -ay;
-  } else if( y < -gl->getAspect() ) {
-    y = -gl->getAspect();
+  } else if( y < gl->getAspect() * -1.0  ) {
+    y = gl->getAspect() * -1.0;
     vy = -vy;
     ay = -ay;
   }
@@ -172,76 +185,6 @@ void Element::update(GLWidget *gl) {
   maxY = y + radius;
 
   return;
-
-  if( fabs(lastX-x) < 0.01 && fabs(lastY-y) < 0.01 && lastSize >= size )
-    return;
-
-  float weight = (lastSize / 2) * CUTOFF / 2;
-
-  int nx = toNode(lastX - weight);
-  int stop_x = toNode(lastX + weight);
-
-  if( stop_x < nx ) {
-    int i = nx;
-    nx = stop_x;
-    stop_x = i;
-  }
-
-  int start_y = toNode(lastY - weight);
-  int stop_y = toNode(lastY + weight);
-
-  if( stop_y < start_y ) {
-    int i = start_y;
-    start_y = stop_y;
-    stop_y = i;
-  }
-
-  while( nx <= stop_x ) {
-    int ny = start_y;
-
-    while( ny <= stop_y ) {
-      gl->nodeMap[nx][ny].remove(this);
-      ny++;
-      //      gl->stats[STAT_NODE_MAP_UPDATES] += 1;
-    }
-    nx++;
-  }
-
-  weight = (size / 2) * CUTOFF / 2;
-
-  nx = toNode(x - weight);
-  stop_x = toNode(x + weight);
-
-  if( stop_x < nx ) {
-    int i = nx;
-    nx = stop_x;
-    stop_x = i;
-  }
-
-  start_y = toNode(y - weight);
-  stop_y = toNode(y + weight);
-
-  if( stop_y < start_y ) {
-    int i = start_y;
-    start_y = stop_y;
-    stop_y = i;
-  }
-
-  while( nx <= stop_x ) {
-    int ny = start_y;
-
-    while( ny <= stop_y ) {
-      gl->nodeMap[nx][ny].insert(this);
-      ny++;
-      gl->stats[STAT_NODE_MAP_UPDATES] += 1;
-    }
-    nx++;
-  }
-
-  lastX = x;
-  lastY = y;
-  lastSize = size;
-
 }
 
 void Element::render(GLWidget *gl) {
@@ -312,11 +255,15 @@ void Element::render(GLWidget *gl) {
     }
   }
 
-  if( hover ) {
+  if( showInfo > 0 || hover ) {
+    QString info = QString("[%1] %2").arg( QString::number(realSize).left(5) ).arg(name());
     glColor4f(1.0, 1.0, 1.0, 1.0);
-    int xi =  (int) ((1.0 + x) / 2.0 * gl->getWidth() );
+    int xi =  (int) ((1.0 + x) / 2.0 * gl->getWidth()) - info.length() * 3;
     int xy =  (int) (( gl->getAspect() - y) / (2 * gl->getAspect()) * gl->getHeight() - r - 5.0);
-    gl->renderText(xi,xy, QString("[%1] %2").arg( QString::number(realSize).left(5) ).arg(name()) );
+
+    
+
+    gl->renderText(xi,xy, info );
   }
 
   if( activities.size() > 0 && rand() % 30 == 1) {

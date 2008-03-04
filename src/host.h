@@ -27,6 +27,8 @@ class Host : public QObject {
   void setPattern(const QString &p) { pattern = p; };
   void setIgnore(const QString &i) { ignore = i; };
   void setColor(const QString &c)   { color = QColor(c); };
+  void setIgnoreQueryParameters(bool p) { ignoreParams = p; };
+
 
   void setGLWidget(GLWidget *glw) { gl = glw; };
   GLWidget *getGLWidget() const { return gl; };
@@ -34,6 +36,7 @@ class Host : public QObject {
   QString getCommandString( void );
   QString getPattern( void ) { return pattern; };
   QString getIgnore( void ) { return ignore; };
+  bool    ignoreQueryParameters( void ) { return ignoreParams; };
 
   QString getDomain( void ) const { return domain; };
   QColor getColor( void ) const { return color; };
@@ -62,6 +65,7 @@ public slots:
   QString args;
 
   QString ignore;
+  bool    ignoreParams;
   QString pattern;
   QColor  color;
 

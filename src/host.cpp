@@ -52,7 +52,8 @@ void Host::readFromStdout(void ) {
 
         QString referrer = rx.cap(2);
 
-        url = url.split("?")[0];
+	if( ignoreQueryParameters() ) 
+	  url = url.split("?")[0];
 
         if( url.contains( QRegExp(ignore, Qt::CaseInsensitive) ) ) {
           continue;

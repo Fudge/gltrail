@@ -76,6 +76,7 @@ void Window::readSettings(GLWidget *gl) {
     h->setPattern( settings.value("pattern").toString() );
     h->setIgnore( settings.value("ignore").toString() );
     h->setColor( settings.value("color").toString() );
+    h->setIgnoreQueryParameters( settings.value("ignore_url_params").toBool() );
 
     h->setGLWidget(gl);
 

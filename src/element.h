@@ -56,21 +56,6 @@ public:
   void add_link_in(Element *e);
   void add_link_out(Element *e);
 
-  int nodeX() const { return (int) ((1.0 + x) / 2.0 * NODE_MAP_SIZE); };
-  int nodeY() const { return (int) ((1.0 + y) / 2.0 * NODE_MAP_SIZE); };
-
-  int toNode(float c) const {
-    int n = (int) ((1.0 + c) / 2.0 * NODE_MAP_SIZE);
-    if( n < 0 )
-      n = 0;
-
-    if( n > NODE_MAP_SIZE - 1) {
-      n = NODE_MAP_SIZE - 1;
-    }
-
-    return n;
-  };
-
   inline QString name(void) const { return m_name; };
 
   float x; // X Pos
@@ -90,9 +75,9 @@ public:
   float minY;
   float maxY;
 
-  float lastX;
-  float lastY;
   float lastSize;
+
+  int   showInfo;
 
   int   messages;
   int   totalMessages;
