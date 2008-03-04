@@ -89,7 +89,7 @@ void Element::add_link_out(Element *e) {
 
 void Element::update_stats(void) {
 
-  lastSize = size;
+  lastSize = wantedSize;
 
   if( rate == 0.0 ) {
     rate = messages / 60.0;
@@ -138,7 +138,7 @@ void Element::update_stats(void) {
     showInfo--;
   }
 
-  if( lastSize < size ) {
+  if( lastSize < wantedSize ) {
     showInfo += 2;
   }
 
