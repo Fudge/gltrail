@@ -60,6 +60,10 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
   y = -10.0;
   lastTick = 0;
   maxSize = 0.0;
+
+  stipple_in  = 0x0001;
+  stipple_out = 0x8000;
+
 }
 
 
@@ -143,6 +147,17 @@ void GLWidget::paintGL()
 
   if( !dragging() ) {
     selected = NULL;
+  }
+
+  stipple_in  = stipple_in  << 1;
+  stipple_out = stipple_out >> 1;
+
+  if( stipple_in > 0x8000 ) {
+    stipple_in = 0x0001;
+  }
+
+  if( stipple_out < 0x0001 ) {
+    stipple_out = 0x8000;
   }
 
   Nodes::iterator iter;

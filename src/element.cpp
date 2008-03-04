@@ -193,6 +193,44 @@ void Element::render(GLWidget *gl) {
 
    bool hover = fabs(gl->getX() - x) <= r*1.5f && fabs(gl->getY() - y) <= r * 1.5f;
 
+   // Render relations?
+   if( gl->showLines() || hover ) {
+     gl->qglColor( host->getColor().darker(200) );
+
+     if( hover && !gl->showLines() ) {
+       glEnable(GL_LINE_STIPPLE);
+       glEnable(GL_LINE_SMOOTH);
+       glLineWidth(2.0);
+     }
+     for(Nodes::iterator it = nodes_in.begin(); it != nodes_in.end(); ++it) {
+       gl->stats[STAT_LINES] += 1;
+       glLineStipple(1, gl->stipple_in);
+
+       glBegin(GL_LINES);
+       glVertex3f(x,y,0.0);
+       glVertex3f((*it)->x, (*it)->y, 0);
+       glEnd();
+     }
+
+     for(Nodes::iterator it = nodes_out.begin(); it != nodes_out.end(); ++it) {
+       gl->stats[STAT_LINES] += 1;
+       glLineStipple(1, gl->stipple_out);
+
+       glBegin(GL_LINES);
+       glVertex3f(x,y,0.0);
+       glVertex3f((*it)->x, (*it)->y, 0);
+       glEnd();
+     }
+
+     if( hover && !gl->showLines() ) {
+       glLineWidth(1.0);
+       glDisable(GL_LINE_SMOOTH);
+       glDisable(GL_LINE_STIPPLE);
+     }
+   }
+
+   // Render circle
+
    if(hover) {
      if( gl->getSelected() == NULL )
        gl->setSelected(this);
@@ -228,33 +266,6 @@ void Element::render(GLWidget *gl) {
      glEnd();
      glDisable(GL_LINE_SMOOTH);
    }
-
-//     glPointSize(size*2);
-//     glBegin(GL_POINTS);
-//     glVertex3f(x,y,0.0);
-//     glEnd();
-
-
-
-   if( gl->showLines() || hover ) {
-     gl->qglColor( host->getColor().darker(300) );
-
-     for(Nodes::iterator it = nodes_in.begin(); it != nodes_in.end(); ++it) {
-       gl->stats[STAT_LINES] += 1;
-       glBegin(GL_LINES);
-       glVertex3f(x,y,0.0);
-       glVertex3f((*it)->x, (*it)->y, 0);
-       glEnd();
-     }
-
-     for(Nodes::iterator it = nodes_out.begin(); it != nodes_out.end(); ++it) {
-       gl->stats[STAT_LINES] += 1;
-       glBegin(GL_LINES);
-       glVertex3f(x,y,0.0);
-       glVertex3f((*it)->x, (*it)->y, 0);
-       glEnd();
-    }
-  }
 
   if( showInfo > 0 || hover ) {
     QString info = QString("[%1] %2").arg( QString::number(realSize).left(5) ).arg(name());

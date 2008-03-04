@@ -95,6 +95,9 @@ public:
   void  setMaxSize(float s) { maxSize = s; };
   void  decayMax(void) { maxSize = maxSize * 0.99; };
 
+  int   stipple_in;
+  int   stipple_out;
+
 protected:
    void initializeGL();
    void paintGL();
