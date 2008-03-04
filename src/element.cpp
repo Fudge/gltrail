@@ -138,9 +138,9 @@ void Element::update_stats(void) {
     showInfo--;
   }
 
-  if( lastSize < wantedSize ) {
-    showInfo = 3;
-  }
+  //  if( lastSize < wantedSize ) {
+  //    showInfo = 3;
+  //  }
 
 }
 
@@ -262,7 +262,7 @@ void Element::render(GLWidget *gl) {
     int xi =  (int) ((1.0 + x) / 2.0 * gl->getWidth()) - info.length() * 3;
     int xy =  (int) (( gl->getAspect() - y) / (2 * gl->getAspect()) * gl->getHeight() - r - 5.0);
 
-    
+
 
     gl->renderText(xi,xy, info );
   }
