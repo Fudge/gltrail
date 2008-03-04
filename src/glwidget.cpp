@@ -230,13 +230,6 @@ void GLWidget::paintGL()
           }
         }
 
-        for( it = e2->activities.begin(); it != e2->activities.end(); ++it ) {
-          if( e == *it ) {
-            cout << "removing[" << e2->name().toStdString() << "] activitites" << endl;
-            it = e2->activities.erase(it);
-          }
-        }
-
       }
 
       elements.remove( e->host->getDomain() + e->name() );

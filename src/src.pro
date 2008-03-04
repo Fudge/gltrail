@@ -2,6 +2,7 @@ QT += opengl
 
 SOURCES += main.cpp \
  element.cpp \
+ activity.cpp \
  window.cpp \
  glwidget.cpp \
  background_reader.cpp \
@@ -16,6 +17,7 @@ CONFIG += warn_on \
 TARGET = ../bin/gltrail
 
 HEADERS += element.h \
+activity.h \
 window.h \
 glwidget.h \
 background_reader.h \

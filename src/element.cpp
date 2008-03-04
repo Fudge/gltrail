@@ -71,7 +71,7 @@ void Element::add_link_in(Element *e) {
       //      std::cout << "[" << host->getDomain().toStdString() << "] ";
       //      cout << "Rel [" << name().toStdString() << "] <- [" << e->name().toStdString() << "] created." << endl;
     }
-    activities << e;
+    activities << new Activity(e, this);
   }
   messages++;
 }
@@ -267,14 +267,17 @@ void Element::render(GLWidget *gl) {
     gl->renderText(xi,xy, info );
   }
 
-  if( activities.size() > 0 && rand() % 30 == 1) {
-    Element *e = activities.takeFirst();
-    gl->qglColor( host->getColor().lighter(120) );
-    gl->stats[STAT_LINES] += 1;
-    glBegin(GL_LINES);
-    glVertex3f(x,y,0.0);
-    glVertex3f(e->x, e->y, 0);
+  if( activities.size() > 0) {
+    glPointSize(2.0);
+    glBegin(GL_POINTS);
+    for(Activities::iterator it = activities.begin(); it != activities.end(); ++it) {
+      if( (*it)->render(gl) ) {
+        delete *it;
+        it = activities.erase(it);
+      }
+    }
     glEnd();
+    glPointSize(1.0);
   }
 
 }

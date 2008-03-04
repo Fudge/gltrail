@@ -17,47 +17,27 @@
  *   Free Software Foundation, Inc.,                                       *
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
-#ifndef ELEMENT_H
-#define ELEMENT_H
+#ifndef ACTIVITY_H
+#define ACTIVITY_H
 
 #include <list>
-#include <QWidget>
-#include <QtOpenGL>
-#include "host.h"
 #include "glwidget.h"
 #include "activity.h"
 
-#define CUTOFF 0.25
-#define K 1.5
-#define SMOOTHING 2000
-#define DAMPENING 0.95
+class Element;
 
 /**
         @author Erlend Simonsen <mr@fudgie.org>
 */
-class Element{
+class Activity{
 
 public:
-  Element() {};
-  Element(Host *h, QString name, QColor col);
+  Activity() {};
+  Activity(Element *src, Element *target);
 
-  virtual ~Element();
+  virtual ~Activity();
 
-  void render(GLWidget *gl);
-  void update(GLWidget *gl);
-  void update_stats(void);
-  bool contains(GLWidget *gl, Element *e);
-  void repulsive_check(GLWidget *gl, Element *e);
-  void attractive_check(GLWidget *gl, Element *e);
-  void repulsive_force(Element *e, double d, float dx, float dy);
-  void attractive_force(Element *e, double d, float dx, float dy);
-
-  bool expired( void ) { return (totalMessages > 0 && rate < 0.001); };
-
-  void add_link_in(Element *e);
-  void add_link_out(Element *e);
-
-  inline QString name(void) const { return m_name; };
+  bool render(GLWidget *gl);
 
   float x; // X Pos
   float y; // Y Pos
@@ -67,49 +47,11 @@ public:
 
   float ax; // X Acceleration
   float ay; // Y Acceleration
-  float size;
-  float wantedSize;
-  float radius;
-  float realSize;
 
-  float minX;
-  float maxX;
-  float minY;
-  float maxY;
-
-  float lastSize;
-
-  int   showInfo;
-
-  int   messages;
-  int   totalMessages;
-  float rate;
-
-  Host *host;
-  QString m_name;
   QColor color;
-
-  QHash<QString,Element *> in;
-  QHash<QString,Element *> out;
-
-  QLinkedList<Element *> nodes_in;
-  QLinkedList<Element *> nodes_out;
-
-  QLinkedList<Activity *> activities;
+  Element *target;
 
 };
-
-typedef QHash<QString,Element *> Elements;
-typedef QLinkedList<Element *> Nodes;
-typedef QLinkedList<Activity *> Activities;
-
-inline bool operator==(const Element &e, const Element &f) {
-  return f.name() == e.name() && e.host->getDomain() == f.host->getDomain();
-}
-
-inline uint qHash(const Element &e) {
-  return qHash(e.host->getDomain() + e.name());
-}
 
 
 #endif
