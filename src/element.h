@@ -67,6 +67,7 @@ public:
   float ax; // X Acceleration
   float ay; // Y Acceleration
   float size;
+  float wantedSize;
   float radius;
   float realSize;
 

@@ -36,11 +36,12 @@ Element::Element(Host *h, QString name, QColor col)
   ay = 0.0000;
 
   size = 1.0;
+  realSize = 1.0;
+  wantedSize = 1.0;
 
   messages = 0;
   totalMessages = 0;
   rate = 0.0;
-  realSize = 0.0;
 
   host = h;
   m_name = name;
@@ -101,37 +102,35 @@ void Element::update_stats(void) {
   switch( host->getGLWidget()->showSize() ) {
   case 0:
     realSize = rate * 60.0;
-    size = realSize;
     break;
   case 1:
     realSize = nodes_in.size();
-    size = realSize;
     break;
   case 2:
     realSize = nodes_out.size();
-    size = realSize;
     break;
   case 3:
     realSize = (nodes_out.size() + nodes_in.size());
-    size = realSize;
     break;
   }
 
+  wantedSize = realSize;
+
   float scale = 1.0;
-  if( size > host->getMaxSize() ) {
-    host->setMaxSize( size );
+  if( wantedSize > host->getMaxSize() ) {
+    host->setMaxSize( wantedSize );
   } else {
-    scale = size / host->getMaxSize();
+    scale = wantedSize / host->getMaxSize();
   }
 
 
-  if( size > 5.0 )
-    size = 5.0;
+  if( wantedSize > 5.0 )
+    wantedSize = 5.0;
 
-  size *= scale;
+  wantedSize *= scale;
 
-  if( size < 1.0 )
-    size = 1.0;
+  if( wantedSize < 1.0 )
+    wantedSize = 1.0;
 
   radius = CUTOFF * size * 0.5;
 
@@ -146,6 +145,8 @@ void Element::update_stats(void) {
 }
 
 void Element::update(GLWidget *gl) {
+
+  size = size + (wantedSize - size) / 60.0;
 
   vx += ax / SMOOTHING;
   vy += ay / SMOOTHING;
