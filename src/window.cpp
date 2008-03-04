@@ -51,7 +51,17 @@ Window::~Window()
 }
 
 void Window::readSettings(GLWidget *gl) {
-  QSettings settings("gltrail.ini", QSettings::IniFormat);
+
+  QString configFile("gltrail.ini");
+  
+  if( QCoreApplication::arguments().size() > 1 ) {
+    configFile = QCoreApplication::arguments().at(1);
+  }
+
+  std::cout << "Reading config[" << configFile.toStdString() << "]" << std::endl;
+
+
+  QSettings settings(configFile, QSettings::IniFormat);
 
   settings.beginGroup("hosts");
   QStringList rels = settings.allKeys();

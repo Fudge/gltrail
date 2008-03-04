@@ -139,7 +139,7 @@ void Element::update_stats(void) {
   }
 
   if( lastSize < wantedSize ) {
-    showInfo += 2;
+    showInfo = 3;
   }
 
 }
