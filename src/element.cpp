@@ -204,7 +204,7 @@ void Element::render(GLWidget *gl) {
      }
      for(Nodes::iterator it = nodes_in.begin(); it != nodes_in.end(); ++it) {
        gl->stats[STAT_LINES] += 1;
-       glLineStipple(1, gl->stipple_in);
+       glLineStipple(1, gl->stipple_out);
 
        glBegin(GL_LINES);
        glVertex3f(x,y,0.0);
@@ -214,7 +214,7 @@ void Element::render(GLWidget *gl) {
 
      for(Nodes::iterator it = nodes_out.begin(); it != nodes_out.end(); ++it) {
        gl->stats[STAT_LINES] += 1;
-       glLineStipple(1, gl->stipple_out);
+       glLineStipple(1, gl->stipple_in);
 
        glBegin(GL_LINES);
        glVertex3f(x,y,0.0);
