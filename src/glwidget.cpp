@@ -59,6 +59,7 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
   x = -10.0;
   y = -10.0;
   lastTick = 0;
+  maxSize = 0.0;
 }
 
 

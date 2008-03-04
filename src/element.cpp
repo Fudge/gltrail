@@ -117,10 +117,10 @@ void Element::update_stats(void) {
   wantedSize = realSize;
 
   float scale = 1.0;
-  if( wantedSize > host->getMaxSize() ) {
-    host->setMaxSize( wantedSize );
+  if( wantedSize > host->getGLWidget()->getMaxSize() ) {
+    host->getGLWidget()->setMaxSize( wantedSize );
   } else {
-    scale = wantedSize / host->getMaxSize();
+    scale = wantedSize / host->getGLWidget()->getMaxSize();
   }
 
 
@@ -146,7 +146,7 @@ void Element::update_stats(void) {
 
 void Element::update(GLWidget *gl) {
 
-  size = size + (wantedSize - size) / 60.0;
+  size = size + (wantedSize-size) / 60.0;
 
   vx += ax / SMOOTHING;
   vy += ay / SMOOTHING;

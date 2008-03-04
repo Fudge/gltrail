@@ -55,7 +55,7 @@ void Host::readFromStdout(void ) {
 	if( ignoreQueryParameters() ) 
 	  url = url.split("?")[0];
 
-        if( url.contains( QRegExp(ignore, Qt::CaseInsensitive) ) ) {
+        if( !ignore.isEmpty() && url.contains( QRegExp(ignore, Qt::CaseInsensitive) ) ) {
           continue;
         }
 

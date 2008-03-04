@@ -91,6 +91,10 @@ public:
    GLuint circle;
    QSet<Element *> nodeMap[NODE_MAP_SIZE][NODE_MAP_SIZE];
 
+  float getMaxSize() const { return (maxSize > 1.0 ? maxSize : 1.0); };
+  void  setMaxSize(float s) { maxSize = s; };
+  void  decayMax(void) { maxSize = maxSize * 0.99; };
+
 protected:
    void initializeGL();
    void paintGL();
@@ -99,7 +103,6 @@ protected:
    void mouseReleaseEvent(QMouseEvent *event);
    void mouseMoveEvent(QMouseEvent *event);
    void keyPressEvent(QKeyEvent *event);
-
 
    void timerEvent(QTimerEvent *event);
 
@@ -112,10 +115,11 @@ protected:
 
    int  button;
 
-   bool lines;
-   bool forces;
-   bool statsMode;
-   int  sizeMode;
+   bool  lines;
+   bool  forces;
+   bool  statsMode;
+   int   sizeMode;
+   float maxSize;
 
    Element *selected;
 

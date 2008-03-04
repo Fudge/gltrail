@@ -15,7 +15,7 @@ class Host : public QObject {
 
  public:
 
-  Host(QObject *parent) : QObject(parent) { maxSize = 0.0; };
+  Host(QObject *parent) : QObject(parent) {};
   ~Host() {};
 
   void setHost(const QString &h)    { host = h; };
@@ -41,13 +41,10 @@ class Host : public QObject {
   QString getDomain( void ) const { return domain; };
   QColor getColor( void ) const { return color; };
 
-  float getMaxSize() const { return (maxSize > 1.0 ? maxSize : 1.0); };
-  void setMaxSize(float s) { maxSize = s; };
-  void decayMax(void) { maxSize = maxSize * 0.99; };
-
   void start();
 
 public slots:
+
   void readFromStdout(void);
   void readFromStderr(void);
 
@@ -55,7 +52,6 @@ public slots:
   QProcess *proc;
 
   GLWidget *gl;
-  float     maxSize;
 
   QString host;
   QString domain;

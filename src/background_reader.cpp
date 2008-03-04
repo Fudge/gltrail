@@ -8,8 +8,9 @@ BackgroundReader::BackgroundReader(Hosts *h, Elements *e) {
 
 void BackgroundReader::run(void ) {
   forever {
-    for(Hosts::const_iterator it = hosts->constBegin(); it != hosts->constEnd(); ++it ) {
-      (*it)->decayMax();
+
+    if( hosts && hosts->size() > 0 ) {
+      hosts->first()->getGLWidget()->decayMax();
     }
 
     int num = 0;
