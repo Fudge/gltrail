@@ -1,0 +1,11 @@
+1. Install qt4-development packages and qmake
+   (sudo apt-get install qt4-dev-tools)
+2. qmake -unix -o Makefile gltrail.pro && make
+3. cp gltrail.ini-example gltrail.ini
+   (and replace with your information)
+4. ./bin/gltrail gltrail.ini
+
+Note: You'll need public-key ssh access set up to your servers,
+      as I haven't found a good/free cross-platform ssh library.
+
+
