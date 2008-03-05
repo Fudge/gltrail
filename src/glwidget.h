@@ -70,7 +70,7 @@ public:
 
    void addRelation(Host *h, QString &url, QString &ref, bool external = false);
 
-   bool showLines() const { return lines; };
+   int  showLines() { return linesMode; };
    bool showForces() const { return forces; };
    int  showSize() const { return sizeMode; };
    bool showStats() const { return statsMode; };
@@ -97,8 +97,8 @@ public:
   int   getMaxHits() const { return (int) maxHits; };
   void  setMaxHits(int h) { maxHits = (float) h; };
 
-  void  decayMax(void) { 
-    maxSize = maxSize * 0.99; 
+  void  decayMax(void) {
+    maxSize = maxSize * 0.99;
     maxHits = maxHits * 0.99;
   };
 
@@ -126,7 +126,7 @@ protected:
 
    int  button;
 
-   bool  lines;
+   int   linesMode;
    bool  forces;
    bool  statsMode;
    int   sizeMode;

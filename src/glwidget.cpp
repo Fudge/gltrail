@@ -49,7 +49,7 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
   BackgroundReader *bg = new BackgroundReader(h, &elements);
   bg->start();
 
-  lines = false;
+  linesMode = 2;
   forces = false;
   statsMode = false;
   sizeMode = 0;
@@ -63,6 +63,8 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
 
   stipple_in  = 0x0001;
   stipple_out = 0x8000;
+
+  stats[STAT_FPS] = 0;
 
 }
 
@@ -300,8 +302,9 @@ void GLWidget::paintGL()
 
   timeval tim;
   gettimeofday(&tim, NULL);
-  double curTick = tim.tv_sec * 1000 + tim.tv_usec / 1000;
-  if( curTick - lastTick > 5000 ) {
+  double curTick = tim.tv_sec + tim.tv_usec / 1000000;
+
+  if( curTick - lastTick > 4 ) {
     stats[STAT_FPS] = (int) (frames / 5.0);
     lastTick = curTick;
     frames = 0;
@@ -339,8 +342,10 @@ void GLWidget::keyPressEvent(QKeyEvent *event) {
   if( event->key() == Qt::Key_Escape ) {
     exit(1);
   } else if( event->key() == Qt::Key_Space ) {
-    lines = !lines;
-    cout << "Lines " << lines << endl;
+    linesMode++;
+    if( linesMode > 2 )
+      linesMode = 0;
+    cout << "Lines " << linesMode << endl;
   } else if( event->key() == Qt::Key_V ) {
     forces = !forces;
     cout << "Forces " << forces << endl;
@@ -352,6 +357,9 @@ void GLWidget::keyPressEvent(QKeyEvent *event) {
     if( sizeMode > 3 ) {
       sizeMode = 0;
     }
+
+    maxSize = 0;
+
     cout << "SizeMode " << sizeMode << endl;
   } else {
     event->ignore();

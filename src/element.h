@@ -28,9 +28,9 @@
 #include "relation.h"
 
 #define CUTOFF 0.25
-#define K 1.5
+#define K 1.75
 #define SMOOTHING 2000
-#define DAMPENING 0.95
+#define DAMPENING 0.96
 
 /**
         @author Erlend Simonsen <mr@fudgie.org>

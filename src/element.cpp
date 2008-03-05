@@ -72,8 +72,8 @@ void Element::add_link_in(Element *e) {
 
     for( Relations::iterator it = relations_in.begin(); it != relations_in.end(); ++it ) {
       if( (*it)->getSource() == e ) {
-	(*it)->addHit();
-	//	std::cout << "Hits[" << (*it)->getHits() << "] from [" << (*it)->getSource()->name().toStdString() << "] to [" << (*it)->getTarget()->name().toStdString() << "]" << std::endl;
+        (*it)->addHit();
+        //      std::cout << "Hits[" << (*it)->getHits() << "] from [" << (*it)->getSource()->name().toStdString() << "] to [" << (*it)->getTarget()->name().toStdString() << "]" << std::endl;
       }
     }
 
@@ -92,7 +92,7 @@ void Element::add_link_out(Element *e) {
 
     for( Relations::iterator it = relations_in.begin(); it != relations_in.end(); ++it ) {
       if( (*it)->getTarget() == e ) {
-	(*it)->addHit();
+        (*it)->addHit();
       }
     }
   }
@@ -267,19 +267,24 @@ void Element::renderRelations(GLWidget *gl) {
    bool hover = fabs(gl->getX() - x) <= r*1.5f && fabs(gl->getY() - y) <= r * 1.5f;
 
    // Render relations?
-   if( gl->showLines() || hover ) {
+   if( gl->showLines() > 0 || hover ) {
 
-     if( hover && !gl->showLines() ) {
+     if( hover && gl->showLines() == 0 ) {
        glEnable(GL_LINE_STIPPLE);
        glEnable(GL_LINE_SMOOTH);
      }
      for(Relations::iterator it = relations_in.begin(); it != relations_in.end(); ++it) {
 
        if( gl->getMaxHits() < (*it)->getHits() ) {
-	 gl->setMaxHits( (*it)->getHits() );
+         gl->setMaxHits( (*it)->getHits() );
        }
 
        float ratio = (*it)->getHits() / (float) gl->getMaxHits();
+
+       // Ignore if only showing > 10%
+       if( gl->showLines() == 2 && ratio < 0.1 )
+         continue;
+
        glLineWidth(1.0 + 2.0 * ratio);
        gl->qglColor( host->getColor().lighter( 10 + (int) (120.0 * ratio)  ) );
 
@@ -293,27 +298,27 @@ void Element::renderRelations(GLWidget *gl) {
      }
 
 
-     if( hover && false ) {
+     if( hover && gl->showLines() == 0 ) {
        for(Relations::iterator it = relations_out.begin(); it != relations_out.end(); ++it) {
-	 gl->stats[STAT_LINES] += 1;
-	 glLineStipple(1, gl->stipple_in);
+         gl->stats[STAT_LINES] += 1;
+         glLineStipple(1, gl->stipple_in);
 
-	 if( gl->getMaxHits() < (*it)->getHits() ) {
-	   gl->setMaxHits( (*it)->getHits() );
-	 }
+         if( gl->getMaxHits() < (*it)->getHits() ) {
+           gl->setMaxHits( (*it)->getHits() );
+         }
 
-	 float ratio = (*it)->getHits() / (float) gl->getMaxHits();
-	 glLineWidth(1.0 + 4.0 * ratio);
-	 gl->qglColor( host->getColor().lighter( 30 + (int) (120.0 * ratio)  ) );
+         float ratio = (*it)->getHits() / (float) gl->getMaxHits();
+         glLineWidth(1.0 + 4.0 * ratio);
+         gl->qglColor( host->getColor().lighter( 30 + (int) (120.0 * ratio)  ) );
 
-	 glBegin(GL_LINES);
-	 glVertex3f(x,y,0.0);
-	 glVertex3f((*it)->getTarget()->x, (*it)->getTarget()->y, 0);
-	 glEnd();
+         glBegin(GL_LINES);
+         glVertex3f(x,y,0.0);
+         glVertex3f((*it)->getTarget()->x, (*it)->getTarget()->y, 0);
+         glEnd();
        }
      }
 
-     if( hover && !gl->showLines() ) {
+     if( hover && gl->showLines() == 0 ) {
        glLineWidth(1.0);
        glDisable(GL_LINE_SMOOTH);
        glDisable(GL_LINE_STIPPLE);
@@ -415,7 +420,6 @@ void Element::repulsive_force(Element *e, double d, float dx, float dy) {
 
   ax += fx;
   ay += fy;
-
 }
 
 void Element::attractive_force(Element *e, double d, float dx, float dy) {
