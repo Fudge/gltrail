@@ -286,7 +286,7 @@ void Element::renderRelations(GLWidget *gl) {
          continue;
 
        glLineWidth(1.0 + 2.0 * ratio);
-       gl->qglColor( host->getColor().lighter( 10 + (int) (120.0 * ratio)  ) );
+       gl->qglColor( host->getColor().lighter( 20 + (int) (120.0 * ratio)  ) );
 
        gl->stats[STAT_LINES] += 1;
        glLineStipple(1, gl->stipple_out);
