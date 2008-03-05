@@ -25,6 +25,7 @@
 #include <QtOpenGL>
 #include "host.h"
 #include "glwidget.h"
+#include "relation.h"
 
 #define CUTOFF 0.25
 #define K 1.5
@@ -93,8 +94,8 @@ public:
   QHash<QString,Element *> in;
   QHash<QString,Element *> out;
 
-  QLinkedList<Element *> nodes_in;
-  QLinkedList<Element *> nodes_out;
+  QLinkedList<Relation *> relations_in;
+  QLinkedList<Relation *> relations_out;
 
   QLinkedList<Element *> activities;
 
@@ -102,6 +103,7 @@ public:
 
 typedef QHash<QString,Element *> Elements;
 typedef QLinkedList<Element *> Nodes;
+typedef QLinkedList<Relation *> Relations;
 
 inline bool operator==(const Element &e, const Element &f) {
   return f.name() == e.name() && e.host->getDomain() == f.host->getDomain();

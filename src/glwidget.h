@@ -93,7 +93,15 @@ public:
 
   float getMaxSize() const { return (maxSize > 1.0 ? maxSize : 1.0); };
   void  setMaxSize(float s) { maxSize = s; };
-  void  decayMax(void) { maxSize = maxSize * 0.99; };
+
+  int   getMaxHits() const { return (int) maxHits; };
+  void  setMaxHits(int h) { maxHits = (float) h; };
+
+  void  decayMax(void) { 
+    maxSize = maxSize * 0.99; 
+    maxHits = maxHits * 0.99;
+  };
+
 
   int   stipple_in;
   int   stipple_out;
@@ -123,6 +131,7 @@ protected:
    bool  statsMode;
    int   sizeMode;
    float maxSize;
+   float maxHits;
 
    Element *selected;
 

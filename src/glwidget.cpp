@@ -160,10 +160,10 @@ void GLWidget::paintGL()
     stipple_out = 0x8000;
   }
 
-  Nodes::iterator iter;
   Nodes::iterator it;
-
+  Nodes::iterator iter;
   Nodes::iterator iter2;
+  Relations::iterator rel_it;
 
   for(iter = nodes.begin(); iter != nodes.end(); ++iter) {
     stats[STAT_ELEMENTS] += 1;
@@ -188,14 +188,14 @@ void GLWidget::paintGL()
       ++iter2;
     }
 
-     for(it = e->nodes_in.begin(); it != e->nodes_in.end(); ++it) {
-       e->attractive_check(this, *it);
+     for(rel_it = e->relations_in.begin(); rel_it != e->relations_in.end(); ++rel_it) {
+       e->attractive_check(this, (*rel_it)->getSource() );
        stats[STAT_ATTRACTIVE_CHECKS] += 1;
        stats[STAT_LINKS] += 1;
      }
 
-     for(it = e->nodes_out.begin(); it != e->nodes_out.end(); ++it) {
-       e->attractive_check(this, *it);
+     for(rel_it = e->relations_out.begin(); rel_it != e->relations_out.end(); ++rel_it) {
+       e->attractive_check(this, (*rel_it)->getTarget() );
        stats[STAT_ATTRACTIVE_CHECKS] += 1;
      }
 
@@ -229,20 +229,20 @@ void GLWidget::paintGL()
         if( e2 == e )
           continue;
 
-        for( it = e2->nodes_in.begin(); it != e2->nodes_in.end(); ++it ) {
+        for( rel_it = e2->relations_in.begin(); rel_it != e2->relations_in.end(); ++rel_it ) {
 
-          //          cout << "Comparing [" << (e->host->getDomain() + e->name()).toStdString() << "] to [" << ((*it)->host->getDomain() + (*it)->name()).toStdString() << "]" << endl;
-          if( e == *it ) {
-            cout << "removing[" << e2->name().toStdString() << "] nodes_in" << endl;
-            it = e2->nodes_in.erase(it);
+          //          cout << "Comparing [" << (e->host->getDomain() + e->name()).toStdString() << "] to [" << ((*rel_it)->host->getDomain() + (*rel_it)->name()).toStdString() << "]" << endl;
+          if( e == (*rel_it)->getSource() ) {
+            cout << "removing[" << e2->name().toStdString() << "] relations_in" << endl;
+            rel_it = e2->relations_in.erase(rel_it);
             e2->in.remove(e2->name());
           }
         }
 
-        for( it = e2->nodes_out.begin(); it != e2->nodes_out.end(); ++it ) {
-          if( e == *it ) {
-            cout << "removing[" << e2->name().toStdString() << "] nodes_out" << endl;
-            it = e2->nodes_out.erase(it);
+        for( rel_it = e2->relations_out.begin(); rel_it != e2->relations_out.end(); ++rel_it ) {
+          if( e == (*rel_it)->getTarget() ) {
+            cout << "removing[" << e2->name().toStdString() << "] relations_out" << endl;
+            rel_it = e2->relations_out.erase(rel_it);
             e2->out.remove(e2->name());
           }
         }
@@ -417,7 +417,7 @@ void GLWidget::addRelation(Host *h, QString &url, QString &ref, bool external) {
     elements[h->getDomain() + url]->add_link_in( elements[h->getDomain() + ref] );
     elements[h->getDomain() +ref]->add_link_out( elements[h->getDomain() + url] );
   } else if( !url.isEmpty() ) {
-      elements[h->getDomain() + url]->add_link_in( NULL );
+    elements[h->getDomain() + url]->add_link_in( NULL );
   }
 
 }
