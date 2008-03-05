@@ -210,11 +210,13 @@ void GLWidget::paintGL()
        selected->ay = 0;
      }
 
-    e->render(this);
+    e->renderRelations(this);
   }
 
   for(iter = nodes.begin(); iter != nodes.end(); ++iter) {
     Element *e = (*iter);
+
+    e->render(this);
 
     if( e->expired() ) {
       cout << "Expired[" << e->name().toStdString() << "][" << e->rate << "]" << endl;

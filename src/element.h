@@ -43,6 +43,8 @@ public:
   virtual ~Element();
 
   void render(GLWidget *gl);
+  void renderRelations(GLWidget *gl);
+
   void update(GLWidget *gl);
   void update_stats(void);
   bool contains(GLWidget *gl, Element *e);
