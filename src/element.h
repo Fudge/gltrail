@@ -26,11 +26,12 @@
 #include "host.h"
 #include "glwidget.h"
 #include "activity.h"
+#include "relation.h"
 
 #define CUTOFF 0.25
-#define K 1.5
+#define K 1.75
 #define SMOOTHING 2000
-#define DAMPENING 0.95
+#define DAMPENING 0.96
 
 /**
         @author Erlend Simonsen <mr@fudgie.org>
@@ -44,6 +45,8 @@ public:
   virtual ~Element();
 
   void render(GLWidget *gl);
+  void renderRelations(GLWidget *gl);
+
   void update(GLWidget *gl);
   void update_stats(void);
   bool contains(GLWidget *gl, Element *e);
@@ -92,8 +95,8 @@ public:
   QHash<QString,Element *> in;
   QHash<QString,Element *> out;
 
-  QLinkedList<Element *> nodes_in;
-  QLinkedList<Element *> nodes_out;
+  QLinkedList<Relation *> relations_in;
+  QLinkedList<Relation *> relations_out;
 
   QLinkedList<Activity *> activities;
 
@@ -102,6 +105,7 @@ public:
 typedef QHash<QString,Element *> Elements;
 typedef QLinkedList<Element *> Nodes;
 typedef QLinkedList<Activity *> Activities;
+typedef QLinkedList<Relation *> Relations;
 
 inline bool operator==(const Element &e, const Element &f) {
   return f.name() == e.name() && e.host->getDomain() == f.host->getDomain();

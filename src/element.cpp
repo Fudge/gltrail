@@ -58,8 +58,8 @@ Element::~Element()
 {
   in.clear();
   out.clear();
-  nodes_in.clear();
-  nodes_out.clear();
+  relations_in.clear();
+  relations_out.clear();
   activities.clear();
 }
 
@@ -67,21 +67,34 @@ void Element::add_link_in(Element *e) {
   if( e != NULL ) {
     if(!in.contains( e->name() ) ) {
       in[e->name()] = e;
-      nodes_in.push_back(e);
-      //      std::cout << "[" << host->getDomain().toStdString() << "] ";
-      //      cout << "Rel [" << name().toStdString() << "] <- [" << e->name().toStdString() << "] created." << endl;
+      relations_in.push_back( new Relation(e,this) );
     }
+
+    for( Relations::iterator it = relations_in.begin(); it != relations_in.end(); ++it ) {
+      if( (*it)->getSource() == e ) {
+        (*it)->addHit();
+        //      std::cout << "Hits[" << (*it)->getHits() << "] from [" << (*it)->getSource()->name().toStdString() << "] to [" << (*it)->getTarget()->name().toStdString() << "]" << std::endl;
+      }
+    }
+
     activities << new Activity(e, this);
   }
   messages++;
 }
 
 void Element::add_link_out(Element *e) {
-  if( e != NULL && !out.contains( e->name() ) ) {
-    out[e->name()] = e;
-    nodes_out.push_back(e);
-    //    std::cout << "[" << host->getDomain().toStdString() << "] ";
-    //    cout << "Rel [" << name().toStdString() << "] -> [" << e->name().toStdString() << "] created." << endl;
+  if( e != NULL ) {
+
+    if( !out.contains( e->name() ) ) {
+      out[e->name()] = e;
+      relations_out.push_back( new Relation(this,e) );
+    }
+
+    for( Relations::iterator it = relations_in.begin(); it != relations_in.end(); ++it ) {
+      if( (*it)->getTarget() == e ) {
+        (*it)->addHit();
+      }
+    }
   }
 
   messages++;
@@ -104,13 +117,13 @@ void Element::update_stats(void) {
     realSize = rate * 60.0;
     break;
   case 1:
-    realSize = nodes_in.size();
+    realSize = relations_in.size();
     break;
   case 2:
-    realSize = nodes_out.size();
+    realSize = relations_out.size();
     break;
   case 3:
-    realSize = (nodes_out.size() + nodes_in.size());
+    realSize = (relations_out.size() + relations_in.size());
     break;
   }
 
@@ -137,10 +150,6 @@ void Element::update_stats(void) {
   if( showInfo > 0 ) {
     showInfo--;
   }
-
-  //  if( lastSize < wantedSize ) {
-  //    showInfo = 3;
-  //  }
 
 }
 
@@ -193,6 +202,8 @@ void Element::render(GLWidget *gl) {
 
    bool hover = fabs(gl->getX() - x) <= r*1.5f && fabs(gl->getY() - y) <= r * 1.5f;
 
+   // Render circle
+
    if(hover) {
      if( gl->getSelected() == NULL )
        gl->setSelected(this);
@@ -229,40 +240,11 @@ void Element::render(GLWidget *gl) {
      glDisable(GL_LINE_SMOOTH);
    }
 
-//     glPointSize(size*2);
-//     glBegin(GL_POINTS);
-//     glVertex3f(x,y,0.0);
-//     glEnd();
-
-
-
-   if( gl->showLines() || hover ) {
-     gl->qglColor( host->getColor().darker(300) );
-
-     for(Nodes::iterator it = nodes_in.begin(); it != nodes_in.end(); ++it) {
-       gl->stats[STAT_LINES] += 1;
-       glBegin(GL_LINES);
-       glVertex3f(x,y,0.0);
-       glVertex3f((*it)->x, (*it)->y, 0);
-       glEnd();
-     }
-
-     for(Nodes::iterator it = nodes_out.begin(); it != nodes_out.end(); ++it) {
-       gl->stats[STAT_LINES] += 1;
-       glBegin(GL_LINES);
-       glVertex3f(x,y,0.0);
-       glVertex3f((*it)->x, (*it)->y, 0);
-       glEnd();
-    }
-  }
-
   if( showInfo > 0 || hover ) {
     QString info = QString("[%1] %2").arg( QString::number(realSize).left(5) ).arg(name());
     glColor4f(1.0, 1.0, 1.0, 1.0);
     int xi =  (int) ((1.0 + x) / 2.0 * gl->getWidth()) - info.length() * 3;
     int xy =  (int) (( gl->getAspect() - y) / (2 * gl->getAspect()) * gl->getHeight() - r - 5.0);
-
-
 
     gl->renderText(xi,xy, info );
   }
@@ -279,6 +261,72 @@ void Element::render(GLWidget *gl) {
     glEnd();
     glPointSize(1.0);
   }
+
+}
+
+void Element::renderRelations(GLWidget *gl) {
+   GLfloat r = 0.004 + (size - 1.0) / 100;
+
+   bool hover = fabs(gl->getX() - x) <= r*1.5f && fabs(gl->getY() - y) <= r * 1.5f;
+
+   // Render relations?
+   if( gl->showLines() > 0 || hover ) {
+
+     if( hover && gl->showLines() == 0 ) {
+       glEnable(GL_LINE_STIPPLE);
+       glEnable(GL_LINE_SMOOTH);
+     }
+     for(Relations::iterator it = relations_in.begin(); it != relations_in.end(); ++it) {
+
+       if( gl->getMaxHits() < (*it)->getHits() ) {
+         gl->setMaxHits( (*it)->getHits() );
+       }
+
+       float ratio = (*it)->getHits() / (float) gl->getMaxHits();
+
+       // Ignore if only showing > 10%
+       if( gl->showLines() == 2 && ratio < 0.1 )
+         continue;
+
+       glLineWidth(1.0 + 2.0 * ratio);
+       gl->qglColor( host->getColor().lighter( 20 + (int) (120.0 * ratio)  ) );
+
+       gl->stats[STAT_LINES] += 1;
+       glLineStipple(1, gl->stipple_out);
+
+       glBegin(GL_LINES);
+       glVertex3f(x,y,0.0);
+       glVertex3f((*it)->getSource()->x, (*it)->getSource()->y, 0);
+       glEnd();
+     }
+
+
+     if( hover && gl->showLines() == 0 ) {
+       for(Relations::iterator it = relations_out.begin(); it != relations_out.end(); ++it) {
+         gl->stats[STAT_LINES] += 1;
+         glLineStipple(1, gl->stipple_in);
+
+         if( gl->getMaxHits() < (*it)->getHits() ) {
+           gl->setMaxHits( (*it)->getHits() );
+         }
+
+         float ratio = (*it)->getHits() / (float) gl->getMaxHits();
+         glLineWidth(1.0 + 4.0 * ratio);
+         gl->qglColor( host->getColor().lighter( 30 + (int) (120.0 * ratio)  ) );
+
+         glBegin(GL_LINES);
+         glVertex3f(x,y,0.0);
+         glVertex3f((*it)->getTarget()->x, (*it)->getTarget()->y, 0);
+         glEnd();
+       }
+     }
+
+     if( hover && gl->showLines() == 0 ) {
+       glLineWidth(1.0);
+       glDisable(GL_LINE_SMOOTH);
+       glDisable(GL_LINE_STIPPLE);
+     }
+   }
 
 }
 
@@ -375,7 +423,6 @@ void Element::repulsive_force(Element *e, double d, float dx, float dy) {
 
   ax += fx;
   ay += fy;
-
 }
 
 void Element::attractive_force(Element *e, double d, float dx, float dy) {

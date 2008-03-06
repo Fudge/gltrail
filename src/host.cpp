@@ -59,10 +59,18 @@ void Host::readFromStdout(void ) {
           continue;
         }
 
+	for( int i = 0; i < replacementPatterns.size(); i++ ) {
+	  url.replace( QRegExp(replacementPatterns[i]), replacementStrings[i] );
+	}
+
 	url.replace( QRegExp("/index\\.vsp$"), "/" );
 
         if( referrer.contains( QRegExp("http://(.*\\.)?" + domain) ) || referrer.startsWith("/") )  {
             referrer = referrer.split("?")[0];
+
+	    for( int i = 0; i < replacementPatterns.size(); i++ ) {
+	      referrer.replace( QRegExp(replacementPatterns[i]), replacementStrings[i] );
+	    }
         }
 
         referrer.replace( QRegExp("^http://(.*\\.)?" + domain), "");

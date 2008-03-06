@@ -49,7 +49,7 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
   BackgroundReader *bg = new BackgroundReader(h, &elements);
   bg->start();
 
-  lines = false;
+  linesMode = 2;
   forces = false;
   statsMode = false;
   sizeMode = 0;
@@ -60,6 +60,12 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
   y = -10.0;
   lastTick = 0;
   maxSize = 0.0;
+
+  stipple_in  = 0x0001;
+  stipple_out = 0x8000;
+
+  stats[STAT_FPS] = 0;
+
 }
 
 
@@ -145,10 +151,21 @@ void GLWidget::paintGL()
     selected = NULL;
   }
 
-  Nodes::iterator iter;
-  Nodes::iterator it;
+  stipple_in  = stipple_in  << 1;
+  stipple_out = stipple_out >> 1;
 
+  if( stipple_in > 0x8000 ) {
+    stipple_in = 0x0001;
+  }
+
+  if( stipple_out < 0x0001 ) {
+    stipple_out = 0x8000;
+  }
+
+  Nodes::iterator it;
+  Nodes::iterator iter;
   Nodes::iterator iter2;
+  Relations::iterator rel_it;
 
   for(iter = nodes.begin(); iter != nodes.end(); ++iter) {
     stats[STAT_ELEMENTS] += 1;
@@ -173,14 +190,14 @@ void GLWidget::paintGL()
       ++iter2;
     }
 
-     for(it = e->nodes_in.begin(); it != e->nodes_in.end(); ++it) {
-       e->attractive_check(this, *it);
+     for(rel_it = e->relations_in.begin(); rel_it != e->relations_in.end(); ++rel_it) {
+       e->attractive_check(this, (*rel_it)->getSource() );
        stats[STAT_ATTRACTIVE_CHECKS] += 1;
        stats[STAT_LINKS] += 1;
      }
 
-     for(it = e->nodes_out.begin(); it != e->nodes_out.end(); ++it) {
-       e->attractive_check(this, *it);
+     for(rel_it = e->relations_out.begin(); rel_it != e->relations_out.end(); ++rel_it) {
+       e->attractive_check(this, (*rel_it)->getTarget() );
        stats[STAT_ATTRACTIVE_CHECKS] += 1;
      }
 
@@ -195,11 +212,13 @@ void GLWidget::paintGL()
        selected->ay = 0;
      }
 
-    e->render(this);
+    e->renderRelations(this);
   }
 
   for(iter = nodes.begin(); iter != nodes.end(); ++iter) {
     Element *e = (*iter);
+
+    e->render(this);
 
     if( e->expired() ) {
       cout << "Expired[" << e->name().toStdString() << "][" << e->rate << "]" << endl;
@@ -212,20 +231,20 @@ void GLWidget::paintGL()
         if( e2 == e )
           continue;
 
-        for( it = e2->nodes_in.begin(); it != e2->nodes_in.end(); ++it ) {
+        for( rel_it = e2->relations_in.begin(); rel_it != e2->relations_in.end(); ++rel_it ) {
 
-          //          cout << "Comparing [" << (e->host->getDomain() + e->name()).toStdString() << "] to [" << ((*it)->host->getDomain() + (*it)->name()).toStdString() << "]" << endl;
-          if( e == *it ) {
-            cout << "removing[" << e2->name().toStdString() << "] nodes_in" << endl;
-            it = e2->nodes_in.erase(it);
+          //          cout << "Comparing [" << (e->host->getDomain() + e->name()).toStdString() << "] to [" << ((*rel_it)->host->getDomain() + (*rel_it)->name()).toStdString() << "]" << endl;
+          if( e == (*rel_it)->getSource() ) {
+            cout << "removing[" << e2->name().toStdString() << "] relations_in" << endl;
+            rel_it = e2->relations_in.erase(rel_it);
             e2->in.remove(e2->name());
           }
         }
 
-        for( it = e2->nodes_out.begin(); it != e2->nodes_out.end(); ++it ) {
-          if( e == *it ) {
-            cout << "removing[" << e2->name().toStdString() << "] nodes_out" << endl;
-            it = e2->nodes_out.erase(it);
+        for( rel_it = e2->relations_out.begin(); rel_it != e2->relations_out.end(); ++rel_it ) {
+          if( e == (*rel_it)->getTarget() ) {
+            cout << "removing[" << e2->name().toStdString() << "] relations_out" << endl;
+            rel_it = e2->relations_out.erase(rel_it);
             e2->out.remove(e2->name());
           }
         }
@@ -276,8 +295,9 @@ void GLWidget::paintGL()
 
   timeval tim;
   gettimeofday(&tim, NULL);
-  double curTick = tim.tv_sec * 1000 + tim.tv_usec / 1000;
-  if( curTick - lastTick > 5000 ) {
+  double curTick = tim.tv_sec + tim.tv_usec / 1000000;
+
+  if( curTick - lastTick > 4 ) {
     stats[STAT_FPS] = (int) (frames / 5.0);
     lastTick = curTick;
     frames = 0;
@@ -315,8 +335,10 @@ void GLWidget::keyPressEvent(QKeyEvent *event) {
   if( event->key() == Qt::Key_Escape ) {
     exit(1);
   } else if( event->key() == Qt::Key_Space ) {
-    lines = !lines;
-    cout << "Lines " << lines << endl;
+    linesMode++;
+    if( linesMode > 2 )
+      linesMode = 0;
+    cout << "Lines " << linesMode << endl;
   } else if( event->key() == Qt::Key_V ) {
     forces = !forces;
     cout << "Forces " << forces << endl;
@@ -328,6 +350,9 @@ void GLWidget::keyPressEvent(QKeyEvent *event) {
     if( sizeMode > 3 ) {
       sizeMode = 0;
     }
+
+    maxSize = 0;
+
     cout << "SizeMode " << sizeMode << endl;
   } else {
     event->ignore();
@@ -393,7 +418,7 @@ void GLWidget::addRelation(Host *h, QString &url, QString &ref, bool external) {
     elements[h->getDomain() + url]->add_link_in( elements[h->getDomain() + ref] );
     elements[h->getDomain() +ref]->add_link_out( elements[h->getDomain() + url] );
   } else if( !url.isEmpty() ) {
-      elements[h->getDomain() + url]->add_link_in( NULL );
+    elements[h->getDomain() + url]->add_link_in( NULL );
   }
 
 }

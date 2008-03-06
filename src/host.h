@@ -29,6 +29,10 @@ class Host : public QObject {
   void setColor(const QString &c)   { color = QColor(c); };
   void setIgnoreQueryParameters(bool p) { ignoreParams = p; };
 
+  void addReplacement(const QString &p, const QString &s) { 
+    replacementPatterns << p;
+    replacementStrings << s;
+  };
 
   void setGLWidget(GLWidget *glw) { gl = glw; };
   GLWidget *getGLWidget() const { return gl; };
@@ -64,6 +68,9 @@ public slots:
   bool    ignoreParams;
   QString pattern;
   QColor  color;
+
+  QStringList replacementPatterns;
+  QStringList replacementStrings;
 
 };
 

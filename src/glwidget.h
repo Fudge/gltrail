@@ -70,7 +70,7 @@ public:
 
    void addRelation(Host *h, QString &url, QString &ref, bool external = false);
 
-   bool showLines() const { return lines; };
+   int  showLines() { return linesMode; };
    bool showForces() const { return forces; };
    int  showSize() const { return sizeMode; };
    bool showStats() const { return statsMode; };
@@ -93,7 +93,18 @@ public:
 
   float getMaxSize() const { return (maxSize > 1.0 ? maxSize : 1.0); };
   void  setMaxSize(float s) { maxSize = s; };
-  void  decayMax(void) { maxSize = maxSize * 0.99; };
+
+  int   getMaxHits() const { return (int) maxHits; };
+  void  setMaxHits(int h) { maxHits = (float) h; };
+
+  void  decayMax(void) {
+    maxSize = maxSize * 0.99;
+    maxHits = maxHits * 0.99;
+  };
+
+
+  int   stipple_in;
+  int   stipple_out;
 
 protected:
    void initializeGL();
@@ -115,11 +126,12 @@ protected:
 
    int  button;
 
-   bool  lines;
+   int   linesMode;
    bool  forces;
    bool  statsMode;
    int   sizeMode;
    float maxSize;
+   float maxHits;
 
    Element *selected;
 
