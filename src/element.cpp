@@ -91,11 +91,11 @@ void Element::add_link_out(Element *e) {
       relations_out.push_back( new Relation(this,e) );
     }
 
-//     for( Relations::iterator it = relations_in.begin(); it != relations_in.end(); ++it ) {
-//       if( (*it)->getTarget() == e ) {
-//         (*it)->addHit();
-//       }
-//     }
+    for( Relations::iterator it = relations_out.begin(); it != relations_out.end(); ++it ) {
+      if( (*it)->getTarget() == e ) {
+        (*it)->addHit();
+      }
+    }
   }
 
   if( external )
@@ -266,7 +266,7 @@ void Element::render(GLWidget *gl) {
   }
 
   if( activities.size() > 0) {
-    glPointSize(2.0);
+    glPointSize(3.0);
     glBegin(GL_POINTS);
     for(Activities::iterator it = activities.begin(); it != activities.end(); ++it) {
       if( (*it)->render(gl) ) {
@@ -305,7 +305,7 @@ void Element::renderRelations(GLWidget *gl) {
          continue;
 
        glLineWidth(1.0 + 2.0 * ratio);
-       gl->qglColor( host->getColor().lighter( 20 + (int) (120.0 * ratio)  ) );
+       gl->qglColor( host->getColor().lighter( 10 + (int) (80.0 * ratio)  ) );
 
        gl->stats[STAT_LINES] += 1;
        glLineStipple(1, gl->stipple_out);
