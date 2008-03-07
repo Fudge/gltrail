@@ -27,6 +27,7 @@ Activity::Activity(Element *s, Element *t)
 {
 
   target = t;
+  source = s;
   color = s->color.lighter(140);
 
   x = s->x;
@@ -50,8 +51,8 @@ bool Activity::render(GLWidget *gl) {
 
   float d = sqrt(dx * dx + dy * dy);
 
-  ax = dx / d / SMOOTHING;
-  ay = dy / d / SMOOTHING;
+  ax = ax * 0.3 + dx / d / SMOOTHING;
+  ay = ay * 0.3 + dy / d / SMOOTHING;
 
   vx = vx + ax;
   vy = vy + ay;
@@ -66,4 +67,21 @@ bool Activity::render(GLWidget *gl) {
   glVertex3f(x,y,0.0);
 
   return ( fabs(dx) < 0.004 && fabs(dy) < 0.004 );
+}
+
+void Activity::fire() {
+  float dx = target->x - source->x;
+  float dy = target->y - source->y;
+
+  float d = sqrt(dx * dx + dy * dy);
+
+  source->vx -= (dx / d / DAMPENING) * 0.001;
+  source->vy -= (dy / d / DAMPENING) * 0.001;
+
+}
+
+void Activity::impact() {
+  target->vx += vx * 0.5;
+  target->vy += vy * 0.5;
+
 }

@@ -52,8 +52,6 @@ Element::Element(Host *h, QString name, QColor col, bool referrer)
 
   external = referrer;
 
-  //  std::cout << "[" << host->getDomain().toStdString() << "] ";
-  //  cout << "Element [" << name.toStdString() << "] created." << endl;
 }
 
 Element::~Element()
@@ -62,6 +60,7 @@ Element::~Element()
   out.clear();
   relations_in.clear();
   relations_out.clear();
+  activity_queue.clear();
   activities.clear();
 }
 
@@ -78,7 +77,7 @@ void Element::add_link_in(Element *e) {
       }
     }
 
-    activities << new Activity(e, this);
+    activity_queue << new Activity(e, this);
   }
   messages++;
 }
@@ -214,6 +213,15 @@ void Element::render(GLWidget *gl) {
 
    bool hover = fabs(gl->getX() - x) <= r*1.5f && fabs(gl->getY() - y) <= r * 1.5f;
 
+   if( activity_queue.size() > 0 && rand() % (60/activity_queue.size()) == 0 ) {
+
+       Activity *a = activity_queue.takeFirst();
+       activities << a;
+       if( gl->useRecoil() ) {
+         a->fire();
+       }
+   }
+
    // Render circle
 
    if(hover) {
@@ -270,6 +278,9 @@ void Element::render(GLWidget *gl) {
     glBegin(GL_POINTS);
     for(Activities::iterator it = activities.begin(); it != activities.end(); ++it) {
       if( (*it)->render(gl) ) {
+        if( gl->useRecoil() ) {
+          (*it)->impact();
+        }
         delete *it;
         it = activities.erase(it);
       }

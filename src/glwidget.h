@@ -74,6 +74,7 @@ public:
    bool showForces() const { return forces; };
    int  showSize() const { return sizeMode; };
    bool showStats() const { return statsMode; };
+   bool useRecoil() const { return recoil; };
 
    float getX() const { return x; };
    float getY() const { return y; };
@@ -128,6 +129,7 @@ protected:
 
    int   linesMode;
    bool  forces;
+   bool  recoil;
    bool  statsMode;
    int   sizeMode;
    float maxSize;

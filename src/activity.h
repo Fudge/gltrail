@@ -38,6 +38,8 @@ public:
   virtual ~Activity();
 
   bool render(GLWidget *gl);
+  void fire();
+  void impact();
 
   float x; // X Pos
   float y; // Y Pos
@@ -50,6 +52,7 @@ public:
 
   QColor color;
   Element *target;
+  Element *source;
 
 };
 

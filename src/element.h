@@ -100,6 +100,7 @@ public:
   QLinkedList<Relation *> relations_in;
   QLinkedList<Relation *> relations_out;
 
+  QLinkedList<Activity *> activity_queue;
   QLinkedList<Activity *> activities;
 
 };

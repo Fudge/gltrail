@@ -61,6 +61,7 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
   lastTick = 0;
   maxSize = 0.0;
   maxHits = 0.0;
+  recoil = true;
 
   stipple_in  = 0x0001;
   stipple_out = 0x8000;
@@ -352,6 +353,9 @@ void GLWidget::keyPressEvent(QKeyEvent *event) {
   } else if( event->key() == Qt::Key_V ) {
     forces = !forces;
     cout << "Forces " << forces << endl;
+  } else if( event->key() == Qt::Key_N ) {
+    recoil = !recoil;
+    cout << "Recoil " << recoil << endl;
   } else if( event->key() == Qt::Key_S ) {
     statsMode = !statsMode;
     cout << "statsMode " << statsMode << endl;

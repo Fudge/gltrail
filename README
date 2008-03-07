@@ -11,7 +11,9 @@ Note: You'll need public-key ssh access set up to your servers,
 Keys:
    ESC = exit
  SPACE = cycle between line modes (off, all, >10% of max traffic)
-     B = cycle between size modes (rate, links in, links out, 
+     S = show/hide stats
+     B = cycle between size modes (rate, links in, links out,
                                    links total, hits)
      V = show repulsive forces
-     S = show/hide stats
+     N = toggle discharge/receive forces
+
