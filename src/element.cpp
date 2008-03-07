@@ -253,12 +253,12 @@ void Element::render(GLWidget *gl) {
    }
 
   if( showInfo > 0 || hover ) {
-    QString info = QString("[%1] %2").arg( QString::number(realSize).left(5) ).arg(name());
+    QString info = QString("[%1] %2").arg( QString::number(realSize).left(5) ).arg(name().left(50));
     glColor4f(1.0, 1.0, 1.0, 1.0);
     int xi =  (int) ((1.0 + x) / 2.0 * gl->getWidth()) - info.length() * 3;
     int xy =  (int) (( gl->getAspect() - y) / (2 * gl->getAspect()) * gl->getHeight() - r - 5.0);
 
-    gl->renderText(xi,xy, info.left(50) );
+    gl->renderText(xi,xy, info );
   }
 
   if( activities.size() > 0 && rand() % 30 == 1) {
