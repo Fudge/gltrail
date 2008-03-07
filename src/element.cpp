@@ -125,6 +125,9 @@ void Element::update_stats(void) {
   case 3:
     realSize = (relations_out.size() + relations_in.size());
     break;
+  case 4:
+    realSize = totalMessages;
+    break;
   }
 
   wantedSize = realSize;
@@ -149,6 +152,13 @@ void Element::update_stats(void) {
 
   if( showInfo > 0 ) {
     showInfo--;
+  }
+
+  for(Relations::iterator it = relations_in.begin(); it != relations_in.end(); ++it) {
+    (*it)->decayHits();
+  }
+  for(Relations::iterator it = relations_out.begin(); it != relations_out.end(); ++it) {
+    (*it)->decayHits();
   }
 
 }
@@ -279,7 +289,7 @@ void Element::renderRelations(GLWidget *gl) {
          gl->setMaxHits( (*it)->getHits() );
        }
 
-       float ratio = (*it)->getHits() / (float) gl->getMaxHits();
+       float ratio = (*it)->getHits() / gl->getMaxHits();
 
        // Ignore if only showing > 10%
        if( gl->showLines() == 2 && ratio < 0.1 )
@@ -307,7 +317,7 @@ void Element::renderRelations(GLWidget *gl) {
            gl->setMaxHits( (*it)->getHits() );
          }
 
-         float ratio = (*it)->getHits() / (float) gl->getMaxHits();
+         float ratio = (*it)->getHits() / gl->getMaxHits();
          glLineWidth(1.0 + 4.0 * ratio);
          gl->qglColor( host->getColor().lighter( 30 + (int) (120.0 * ratio)  ) );
 

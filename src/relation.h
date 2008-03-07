@@ -16,15 +16,17 @@ class Relation  {
   Relation(Element *s, Element *t) {
     src = s;
     target = t;
-    hits   = 1;
+    hits   = 1.0;
   };
   ~Relation() {};
 
   Element *getSource(void) { return src; };
   Element *getTarget(void) { return target; };
-  int      getHits(void) { return hits; };
-  void     addHit(void) { hits ++; };
-  
+  float    getHits(void) { return hits; };
+  void     addHit(void) { hits += 1.0; };
+  void     decayHits(void) { hits *= 0.995; };
+
+
 
  private:
 
@@ -32,7 +34,7 @@ class Relation  {
   Element  *src;
   Element  *target;
 
-  int       hits;
+  float    hits;
 
 };
 
