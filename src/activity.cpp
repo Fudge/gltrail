@@ -27,7 +27,7 @@ Activity::Activity(Element *s, Element *t)
 {
 
   target = t;
-  color = s->color.lighter(120);
+  color = s->color.lighter(140);
 
   x = s->x;
   y = s->y;
