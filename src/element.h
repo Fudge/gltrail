@@ -40,7 +40,7 @@ class Element{
 
 public:
   Element() {};
-  Element(Host *h, QString name, QColor col);
+  Element(Host *h, QString name, QColor col, bool referrer = false);
 
   virtual ~Element();
 
@@ -91,6 +91,8 @@ public:
   Host *host;
   QString m_name;
   QColor color;
+
+  bool external;
 
   QHash<QString,Element *> in;
   QHash<QString,Element *> out;

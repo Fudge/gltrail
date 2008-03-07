@@ -60,6 +60,7 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
   y = -10.0;
   lastTick = 0;
   maxSize = 0.0;
+  maxHits = 0.0;
 
   stipple_in  = 0x0001;
   stipple_out = 0x8000;
@@ -289,6 +290,9 @@ void GLWidget::paintGL()
   case 3:
     text = text.arg("Links TOTAL");
     break;
+  case 4:
+    text = text.arg("Hits");
+    break;
   }
 
   renderText(2, (int) (height * 0.9), text);
@@ -347,7 +351,7 @@ void GLWidget::keyPressEvent(QKeyEvent *event) {
     cout << "statsMode " << statsMode << endl;
   } else if( event->key() == Qt::Key_B ) {
     sizeMode++;
-    if( sizeMode > 3 ) {
+    if( sizeMode > 4 ) {
       sizeMode = 0;
     }
 
@@ -411,7 +415,7 @@ void GLWidget::addRelation(Host *h, QString &url, QString &ref, bool external) {
         color = color.darker(300);
       }
 
-      elements[h->getDomain() + ref] = new Element(h, ref, color);
+      elements[h->getDomain() + ref] = new Element(h, ref, color, external);
       nodes.push_back( elements[h->getDomain() + ref] );
     }
 

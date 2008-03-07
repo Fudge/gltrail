@@ -94,8 +94,8 @@ public:
   float getMaxSize() const { return (maxSize > 1.0 ? maxSize : 1.0); };
   void  setMaxSize(float s) { maxSize = s; };
 
-  int   getMaxHits() const { return (int) maxHits; };
-  void  setMaxHits(int h) { maxHits = (float) h; };
+  float getMaxHits() const { return maxHits; };
+  void  setMaxHits(float h) { maxHits = (float) h; };
 
   void  decayMax(void) {
     maxSize = maxSize * 0.99;
