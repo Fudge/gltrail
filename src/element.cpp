@@ -24,7 +24,7 @@
 
 using namespace std;
 
-Element::Element(Host *h, QString name, QColor col)
+Element::Element(Host *h, QString name, QColor col, bool referrer)
 {
   x = 1.0 - rand() % 1000 / 500.0;
   y = 1.0 - rand() % 1000 / 500.0;
@@ -50,6 +50,8 @@ Element::Element(Host *h, QString name, QColor col)
 
   showInfo = 3;
 
+  external = referrer;
+
   //  std::cout << "[" << host->getDomain().toStdString() << "] ";
   //  cout << "Element [" << name.toStdString() << "] created." << endl;
 }
@@ -73,7 +75,6 @@ void Element::add_link_in(Element *e) {
     for( Relations::iterator it = relations_in.begin(); it != relations_in.end(); ++it ) {
       if( (*it)->getSource() == e ) {
         (*it)->addHit();
-        //      std::cout << "Hits[" << (*it)->getHits() << "] from [" << (*it)->getSource()->name().toStdString() << "] to [" << (*it)->getTarget()->name().toStdString() << "]" << std::endl;
       }
     }
 
@@ -90,14 +91,15 @@ void Element::add_link_out(Element *e) {
       relations_out.push_back( new Relation(this,e) );
     }
 
-    for( Relations::iterator it = relations_in.begin(); it != relations_in.end(); ++it ) {
-      if( (*it)->getTarget() == e ) {
-        (*it)->addHit();
-      }
-    }
+//     for( Relations::iterator it = relations_in.begin(); it != relations_in.end(); ++it ) {
+//       if( (*it)->getTarget() == e ) {
+//         (*it)->addHit();
+//       }
+//     }
   }
 
-  messages++;
+  if( external )
+    messages++;
 }
 
 void Element::update_stats(void) {
@@ -256,7 +258,7 @@ void Element::render(GLWidget *gl) {
     int xi =  (int) ((1.0 + x) / 2.0 * gl->getWidth()) - info.length() * 3;
     int xy =  (int) (( gl->getAspect() - y) / (2 * gl->getAspect()) * gl->getHeight() - r - 5.0);
 
-    gl->renderText(xi,xy, info );
+    gl->renderText(xi,xy, info.left(50) );
   }
 
   if( activities.size() > 0 && rand() % 30 == 1) {

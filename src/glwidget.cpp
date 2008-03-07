@@ -422,7 +422,7 @@ void GLWidget::addRelation(Host *h, QString &url, QString &ref, bool external) {
         color = color.darker(300);
       }
 
-      elements[h->getDomain() + ref] = new Element(h, ref, color);
+      elements[h->getDomain() + ref] = new Element(h, ref, color, external);
       nodes.push_back( elements[h->getDomain() + ref] );
     }
 
