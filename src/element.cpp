@@ -229,11 +229,11 @@ void Element::render(GLWidget *gl) {
        gl->setSelected(this);
      glColor4f(1.0, 1.0, 1.0, 1.0);
    } else {
-     gl->qglColor( color );
-   }
-
-   if( activities.size() > 0) {
-     gl->qglColor( host->getColor().lighter( 120) );
+     if( activities.size() > 0 ) {
+       gl->qglColor( host->getColor().lighter( 120) );
+     } else {
+       gl->qglColor( color );
+     }
    }
 
    if( size == 1.0 ) {
