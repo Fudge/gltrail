@@ -318,8 +318,9 @@ void Element::renderRelations(GLWidget *gl) {
        }
      }
 
+     glLineWidth(1.0);
+
      if( hover && gl->showLines() == 0 ) {
-       glLineWidth(1.0);
        glDisable(GL_LINE_SMOOTH);
        glDisable(GL_LINE_STIPPLE);
      }
