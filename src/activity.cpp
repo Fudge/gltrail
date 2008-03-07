@@ -47,8 +47,20 @@ Activity::~Activity()
 bool Activity::render(GLWidget *gl) {
   float dx = target->x - x;
   float dy = target->y - y;
-  x = x + dx / 20.0;
-  y = y + dy / 20.0;
+
+  float d = sqrt(dx * dx + dy * dy);
+
+  ax = dx / d / SMOOTHING;
+  ay = dy / d / SMOOTHING;
+
+  vx = vx + ax;
+  vy = vy + ay;
+
+  vx *= 0.9;
+  vy *= 0.9;
+
+  x = x + vx;
+  y = y + vy;
 
   gl->qglColor( color );
   glVertex3f(x,y,0.0);

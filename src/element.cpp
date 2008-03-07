@@ -224,6 +224,10 @@ void Element::render(GLWidget *gl) {
      gl->qglColor( color );
    }
 
+   if( activities.size() > 0) {
+     gl->qglColor( host->getColor().lighter( 120) );
+   }
+
    if( size == 1.0 ) {
      glTranslatef(x,y,0.0);
      glEnable(GL_LINE_SMOOTH);
