@@ -137,6 +137,8 @@ protected:
 
    double lastTick;
 
+   QList<Host *> *hosts;
+
 
 };
 

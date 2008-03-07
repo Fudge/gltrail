@@ -29,7 +29,7 @@ class Host : public QObject {
   void setColor(const QString &c)   { color = QColor(c); };
   void setIgnoreQueryParameters(bool p) { ignoreParams = p; };
 
-  void addReplacement(const QString &p, const QString &s) { 
+  void addReplacement(const QString &p, const QString &s) {
     replacementPatterns << p;
     replacementStrings << s;
   };
@@ -46,6 +46,7 @@ class Host : public QObject {
   QColor getColor( void ) const { return color; };
 
   void start();
+  void end();
 
 public slots:
 

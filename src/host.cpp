@@ -4,6 +4,8 @@
 #include <iostream>
 #include "glwidget.h"
 
+using namespace std;
+
 void Host::start(void) {
   proc = new QProcess( this );
 
@@ -17,6 +19,17 @@ void Host::start(void) {
   proc->waitForStarted();
 }
 
+
+void Host::end( void ) {
+  cout << "Terminating[" << domain.toStdString() << "]" << endl;
+  proc->terminate();
+  proc->waitForFinished(2000);
+  if( proc->state() == QProcess::Running ) {
+    cout << "Killing[" << domain.toStdString() << "]" << endl;
+    proc->kill();
+  }
+
+}
 
 QString Host::getCommandString() {
   QStringList cmd;
@@ -52,25 +65,25 @@ void Host::readFromStdout(void ) {
 
         QString referrer = rx.cap(2);
 
-	if( ignoreQueryParameters() ) 
-	  url = url.split("?")[0];
+        if( ignoreQueryParameters() )
+          url = url.split("?")[0];
 
         if( !ignore.isEmpty() && url.contains( QRegExp(ignore, Qt::CaseInsensitive) ) ) {
           continue;
         }
 
-	for( int i = 0; i < replacementPatterns.size(); i++ ) {
-	  url.replace( QRegExp(replacementPatterns[i]), replacementStrings[i] );
-	}
+        for( int i = 0; i < replacementPatterns.size(); i++ ) {
+          url.replace( QRegExp(replacementPatterns[i]), replacementStrings[i] );
+        }
 
-	url.replace( QRegExp("/index\\.vsp$"), "/" );
+        url.replace( QRegExp("/index\\.vsp$"), "/" );
 
         if( referrer.contains( QRegExp("http://(.*\\.)?" + domain) ) || referrer.startsWith("/") )  {
             referrer = referrer.split("?")[0];
 
-	    for( int i = 0; i < replacementPatterns.size(); i++ ) {
-	      referrer.replace( QRegExp(replacementPatterns[i]), replacementStrings[i] );
-	    }
+            for( int i = 0; i < replacementPatterns.size(); i++ ) {
+              referrer.replace( QRegExp(replacementPatterns[i]), replacementStrings[i] );
+            }
         }
 
         referrer.replace( QRegExp("^http://(.*\\.)?" + domain), "");

@@ -66,12 +66,16 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
   stipple_out = 0x8000;
 
   stats[STAT_FPS] = 0;
-
+  hosts = h;
 }
 
 
 GLWidget::~GLWidget()
 {
+  if( hosts != NULL ) {
+    for(Hosts::iterator it = hosts->begin(); it != hosts->end(); ++it)
+      (*it)->end();
+  }
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -249,7 +253,6 @@ void GLWidget::paintGL()
             e2->out.remove(e2->name());
           }
         }
-
       }
 
       elements.remove( e->host->getDomain() + e->name() );
@@ -337,6 +340,9 @@ void GLWidget::resizeGL(int width, int height) {
 
 void GLWidget::keyPressEvent(QKeyEvent *event) {
   if( event->key() == Qt::Key_Escape ) {
+    for(Hosts::iterator it = hosts->begin(); it != hosts->end(); ++it)
+      (*it)->end();
+    hosts = NULL;
     exit(1);
   } else if( event->key() == Qt::Key_Space ) {
     linesMode++;
