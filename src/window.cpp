@@ -53,7 +53,7 @@ Window::~Window()
 void Window::readSettings(GLWidget *gl) {
 
   QString configFile("gltrail.ini");
-  
+
   if( QCoreApplication::arguments().size() > 1 ) {
     configFile = QCoreApplication::arguments().at(1);
   }
@@ -87,16 +87,17 @@ void Window::readSettings(GLWidget *gl) {
     h->setIgnore( settings.value("ignore").toString() );
     h->setColor( settings.value("color").toString() );
     h->setIgnoreQueryParameters( settings.value("ignore_url_params").toBool() );
+    h->setAutoPurge( settings.value("auto_purge").toBool() );
 
     QStringList keys = settings.childKeys();
     for( int i = 0; i < keys.size(); i++ ) {
       if( keys[i].startsWith("replace_") ) {
-	QString pattern = settings.value(keys[i]).toString();
-	QString str     = keys[i];
-	str.replace("replace_", "");
-	if( pattern.startsWith("/") ) 
-	  str = "/" + str;
-	h->addReplacement( pattern,str );
+        QString pattern = settings.value(keys[i]).toString();
+        QString str     = keys[i];
+        str.replace("replace_", "");
+        if( pattern.startsWith("/") )
+          str = "/" + str;
+        h->addReplacement( pattern,str );
       }
     }
 

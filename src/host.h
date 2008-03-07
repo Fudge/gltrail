@@ -25,9 +25,10 @@ class Host : public QObject {
   void setCommand(const QString &c) { command = c; };
   void setArgs(const QString &a)    { args = a; };
   void setPattern(const QString &p) { pattern = p; };
-  void setIgnore(const QString &i) { ignore = i; };
+  void setIgnore(const QString &i)  { ignore = i; };
   void setColor(const QString &c)   { color = QColor(c); };
   void setIgnoreQueryParameters(bool p) { ignoreParams = p; };
+  void setAutoPurge(bool p)         {autoPurge = p; };
 
   void addReplacement(const QString &p, const QString &s) {
     replacementPatterns << p;
@@ -43,7 +44,8 @@ class Host : public QObject {
   bool    ignoreQueryParameters( void ) { return ignoreParams; };
 
   QString getDomain( void ) const { return domain; };
-  QColor getColor( void ) const { return color; };
+  QColor  getColor( void ) const { return color; };
+  bool    doPurge( void ) const { return autoPurge; };
 
   void start();
   void end();
@@ -69,6 +71,8 @@ public slots:
   bool    ignoreParams;
   QString pattern;
   QColor  color;
+
+  bool    autoPurge;
 
   QStringList replacementPatterns;
   QStringList replacementStrings;

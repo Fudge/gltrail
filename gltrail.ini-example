@@ -11,5 +11,6 @@ replace_:id=/\\d+$
 replace_:md5=/[a-zA-Z0-9]{32}
 ignore=\\.(jpg|png|jpeg|gif|swf|js|css|jar|ico|mp3)$
 ignore_url_params=true
+auto_purge=true
 color=#FF4444
 

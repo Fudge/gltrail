@@ -225,7 +225,7 @@ void GLWidget::paintGL()
 
     e->render(this);
 
-    if( e->expired() ) {
+    if( e->expired() && e->host->doPurge() ) {
       cout << "Expired[" << e->name().toStdString() << "][" << e->rate << "]" << endl;
 
       for(iter2 = nodes.begin(); iter2 != nodes.end(); ++iter2) {

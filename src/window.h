@@ -39,16 +39,6 @@ public:
 private:
    GLWidget *glWidget;
    QProcess *proc;
-
-
-
-   QString host;
-   QString user;
-   QString port;
-   QString command;
-   QString args;
-   QString pattern;
-
 };
 
 #endif
