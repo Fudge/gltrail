@@ -344,7 +344,7 @@ void GLWidget::keyPressEvent(QKeyEvent *event) {
     for(Hosts::iterator it = hosts->begin(); it != hosts->end(); ++it)
       (*it)->end();
     hosts = NULL;
-    exit(1);
+    QApplication::exit(1);
   } else if( event->key() == Qt::Key_Space ) {
     linesMode++;
     if( linesMode > 2 )
