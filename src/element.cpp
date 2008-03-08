@@ -105,11 +105,15 @@ void Element::update_stats(void) {
 
   lastSize = wantedSize;
 
-  if( rate == 0.0 ) {
+  if( rate == 0.0 && totalMessages == 0 ) {
     rate = messages / 60.0;
   } else {
     rate = (rate * 299.0 + messages) / 300.0;
   }
+
+  if( rate < 0.0001 )
+    rate = 0.0;
+
   totalMessages += messages;
   messages = 0;
 

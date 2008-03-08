@@ -1,5 +1,6 @@
 *.o
 *~
 /bin
+/videos
 moc_*.cpp
 *.ini
