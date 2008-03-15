@@ -23,6 +23,8 @@
 #include <QGLWidget>
 #include <QtOpenGL>
 
+#include "input.h"
+
 class Host;
 class Element;
 
@@ -62,13 +64,13 @@ class GLWidget : public QGLWidget
    Q_OBJECT
 
 public:
-  GLWidget(QWidget *parent, QList<Host *> *h);
+  GLWidget(QWidget *parent, QList<Input *> *h);
   ~GLWidget();
 
    QSize minimumSizeHint() const;
    QSize sizeHint() const;
 
-   void addRelation(Host *h, QString &url, QString &ref, bool external = false);
+   void addRelation(Input *h, QString &url, QString &ref, bool external = false);
 
    int  showLines() { return linesMode; };
    bool showForces() const { return forces; };
@@ -139,7 +141,7 @@ protected:
 
    double lastTick;
 
-   QList<Host *> *hosts;
+   QList<Input *> *hosts;
 
 
 };

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void Host::start(void) {
+void Input::start(void) {
   proc = new QProcess( this );
 
   proc->setProcessChannelMode(QProcess::SeparateChannels);
@@ -20,7 +20,7 @@ void Host::start(void) {
 }
 
 
-void Host::end( void ) {
+void Input::end( void ) {
   cout << "Terminating[" << domain.toStdString() << "]" << endl;
   proc->terminate();
   proc->waitForFinished(2000);
@@ -31,7 +31,7 @@ void Host::end( void ) {
 
 }
 
-QString Host::getCommandString() {
+QString Input::getCommandString() {
   QStringList cmd;
   cmd << "ssh";
   cmd << user + "@" + host;
@@ -44,7 +44,7 @@ QString Host::getCommandString() {
   return cmd.join(" ");
 }
 
-void Host::readFromStdout(void ) {
+void Input::readFromStdout(void ) {
   char buf[2048];
 
   proc->setReadChannel(QProcess::StandardOutput);
@@ -108,7 +108,7 @@ void Host::readFromStdout(void ) {
   }
 }
 
-void Host::readFromStderr(void) {
+void Input::readFromStderr(void) {
   char buf[2048];
   std::cout << "STDERR!\n";
   proc->setReadChannel(QProcess::StandardError);

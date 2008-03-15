@@ -23,7 +23,7 @@
 #include <list>
 #include <QWidget>
 #include <QtOpenGL>
-#include "host.h"
+#include "input.h"
 #include "glwidget.h"
 #include "activity.h"
 #include "relation.h"
@@ -40,7 +40,7 @@ class Element{
 
 public:
   Element() {};
-  Element(Host *h, QString name, QColor col, bool referrer = false);
+  Element(Input *h, QString name, QColor col, bool referrer = false);
 
   virtual ~Element();
 
@@ -88,7 +88,7 @@ public:
   int   totalMessages;
   float rate;
 
-  Host *host;
+  Input *host;
   QString m_name;
   QColor color;
 

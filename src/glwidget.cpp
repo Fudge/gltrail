@@ -26,8 +26,8 @@ using namespace std;
 #include <iostream>
 #include <stdlib.h>
 #include <list>
-#include "background_reader.h"
-#include "host.h"
+#include "background_updater.h"
+#include "input.h"
 #include <sys/time.h>
 #include <math.h>
 
@@ -38,7 +38,7 @@ Nodes    nodes;
 int frames = 0;
 int last_time = 0;
 
-GLWidget::GLWidget(QWidget *parent, Hosts *h)
+GLWidget::GLWidget(QWidget *parent, Inputs *h)
   : QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::Rgba | QGL::DirectRendering | QGL::AlphaChannel), parent)
 {
   //  startTimer(1);
@@ -46,7 +46,7 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
   setFocusPolicy(Qt::StrongFocus);
   setMouseTracking(true);
 
-  BackgroundReader *bg = new BackgroundReader(h, &elements);
+  BackgroundUpdater *bg = new BackgroundUpdater(h, &elements);
   bg->start();
 
   linesMode = 2;
@@ -74,7 +74,7 @@ GLWidget::GLWidget(QWidget *parent, Hosts *h)
 GLWidget::~GLWidget()
 {
   if( hosts != NULL ) {
-    for(Hosts::iterator it = hosts->begin(); it != hosts->end(); ++it)
+    for(Inputs::iterator it = hosts->begin(); it != hosts->end(); ++it)
       (*it)->end();
   }
 }
@@ -341,7 +341,7 @@ void GLWidget::resizeGL(int width, int height) {
 
 void GLWidget::keyPressEvent(QKeyEvent *event) {
   if( event->key() == Qt::Key_Escape ) {
-    for(Hosts::iterator it = hosts->begin(); it != hosts->end(); ++it)
+    for(Inputs::iterator it = hosts->begin(); it != hosts->end(); ++it)
       (*it)->end();
     hosts = NULL;
     QApplication::exit(1);
@@ -410,7 +410,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
   //  cout << "x: " << x << ", y: " << y << endl;
 }
 
-void GLWidget::addRelation(Host *h, QString &url, QString &ref, bool external) {
+void GLWidget::addRelation(Input *h, QString &url, QString &ref, bool external) {
 
   if( elements.contains(h->getDomain() + url) == false ) {
     QColor color = h->getColor();

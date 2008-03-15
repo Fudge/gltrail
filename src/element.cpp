@@ -24,7 +24,7 @@
 
 using namespace std;
 
-Element::Element(Host *h, QString name, QColor col, bool referrer)
+Element::Element(Input *h, QString name, QColor col, bool referrer)
 {
   x = 1.0 - rand() % 1000 / 500.0;
   y = 1.0 - rand() % 1000 / 500.0;

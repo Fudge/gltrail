@@ -5,28 +5,26 @@
 #include <QList>
 #include <QProcess>
 #include <QColor>
-
+#include "../input.h"
 
 class GLWidget;
 
-class Host : public QObject {
+class SSH : public Input {
 
   Q_OBJECT
 
  public:
 
-  Host(QObject *parent) : QObject(parent) {};
-  ~Host() {};
+  SSH(QObject *parent) : Input(parent) {};
+  ~SSH() {};
 
   void setHost(const QString &h)    { host = h; };
-  void setDomain(const QString &d)  { domain = d; };
   void setUser(const QString &u)    { user = u; };
   void setPort(const QString &p)    { port = p; };
   void setCommand(const QString &c) { command = c; };
   void setArgs(const QString &a)    { args = a; };
   void setPattern(const QString &p) { pattern = p; };
   void setIgnore(const QString &i)  { ignore = i; };
-  void setColor(const QString &c)   { color = QColor(c); };
   void setIgnoreQueryParameters(bool p) { ignoreParams = p; };
   void setAutoPurge(bool p)         {autoPurge = p; };
 
@@ -35,17 +33,10 @@ class Host : public QObject {
     replacementStrings << s;
   };
 
-  void setGLWidget(GLWidget *glw) { gl = glw; };
-  GLWidget *getGLWidget() const { return gl; };
-
   QString getCommandString( void );
   QString getPattern( void ) { return pattern; };
   QString getIgnore( void ) { return ignore; };
   bool    ignoreQueryParameters( void ) { return ignoreParams; };
-
-  QString getDomain( void ) const { return domain; };
-  QColor  getColor( void ) const { return color; };
-  bool    doPurge( void ) const { return autoPurge; };
 
   void start();
   void end();
@@ -58,10 +49,7 @@ public slots:
  private:
   QProcess *proc;
 
-  GLWidget *gl;
-
   QString host;
-  QString domain;
   QString user;
   QString port;
   QString command;
@@ -70,15 +58,10 @@ public slots:
   QString ignore;
   bool    ignoreParams;
   QString pattern;
-  QColor  color;
-
-  bool    autoPurge;
 
   QStringList replacementPatterns;
   QStringList replacementStrings;
 
 };
-
-typedef QList<Host *> Hosts;
 
 #endif

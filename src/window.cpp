@@ -23,15 +23,16 @@
 #include <QDebug>
 
 #include "window.h"
-#include "host.h"
+#include "input.h"
+#include "inputs/ssh.h"
 
-Hosts hosts;
+Inputs inputs;
 
 Window::Window(QWidget *parent)
  : QWidget(parent)
 {
 
-  glWidget = new GLWidget(this, &hosts);
+  glWidget = new GLWidget(this, &inputs);
 
   QHBoxLayout* layout = new QHBoxLayout();
   layout->setContentsMargins(0,0,0,0);
@@ -75,7 +76,7 @@ void Window::readSettings(GLWidget *gl) {
     std::cout << "Reading [" << domain.toStdString() << "]" << std::endl;
     settings.endGroup();
 
-    Host *h = new Host(this);
+    SSH *h = new SSH(this);
     settings.beginGroup(domain);
     h->setHost(hostName);
     h->setDomain(domain);
@@ -106,7 +107,7 @@ void Window::readSettings(GLWidget *gl) {
     settings.endGroup();
     std::cout << "Read [" << hostName.toStdString() << "]" << std::endl;
 
-    hosts << h;
+    inputs << h;
     h->start();
   }
 
