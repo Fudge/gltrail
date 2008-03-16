@@ -9,14 +9,12 @@
 
 class GLWidget;
 
-class Input : public QObject {
-
-  Q_OBJECT
+class Input  {
 
  public:
 
-  Input(QObject *parent) : QObject(parent) {};
-  ~Input() {};
+  Input() {};
+  virtual ~Input() {};
 
   void setDomain(const QString &d)  { domain = d; };
   void setColor(const QString &c)   { color = QColor(c); };
@@ -27,10 +25,11 @@ class Input : public QObject {
   void setGLWidget(GLWidget *glw) { gl = glw; };
   GLWidget *getGLWidget() const { return gl; };
 
+  void    setAutoPurge(bool p)  {autoPurge = p; };
   bool    doPurge( void ) const { return autoPurge; };
 
-  virtual void start() {};
-  virtual void end() {};
+  virtual void startProcessing();
+  virtual void endProcessing();
  protected:
   GLWidget *gl;
   QString domain;

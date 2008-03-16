@@ -1,5 +1,5 @@
-#ifndef HOST_H
-#define HOST_H
+#ifndef SSH_H
+#define SSH_H
 
 #include <QObject>
 #include <QList>
@@ -9,13 +9,13 @@
 
 class GLWidget;
 
-class SSH : public Input {
+class SSH : public QObject, public Input {
 
   Q_OBJECT
 
  public:
 
-  SSH(QObject *parent) : Input(parent) {};
+  SSH(QObject *parent) : QObject(parent) {};
   ~SSH() {};
 
   void setHost(const QString &h)    { host = h; };
@@ -26,7 +26,6 @@ class SSH : public Input {
   void setPattern(const QString &p) { pattern = p; };
   void setIgnore(const QString &i)  { ignore = i; };
   void setIgnoreQueryParameters(bool p) { ignoreParams = p; };
-  void setAutoPurge(bool p)         {autoPurge = p; };
 
   void addReplacement(const QString &p, const QString &s) {
     replacementPatterns << p;
@@ -38,8 +37,8 @@ class SSH : public Input {
   QString getIgnore( void ) { return ignore; };
   bool    ignoreQueryParameters( void ) { return ignoreParams; };
 
-  void start();
-  void end();
+  void startProcessing();
+  void endProcessing();
 
 public slots:
 

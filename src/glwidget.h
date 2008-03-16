@@ -78,6 +78,9 @@ public:
    bool showStats() const { return statsMode; };
    bool useRecoil() const { return recoil; };
 
+   void setShowLines(int mode) { linesMode = mode; };
+   void setShowSize(int mode) { sizeMode = mode; };
+
    float getX() const { return x; };
    float getY() const { return y; };
 

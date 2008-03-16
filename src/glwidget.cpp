@@ -41,7 +41,6 @@ int last_time = 0;
 GLWidget::GLWidget(QWidget *parent, Inputs *h)
   : QGLWidget(QGLFormat(QGL::DoubleBuffer | QGL::Rgba | QGL::DirectRendering | QGL::AlphaChannel), parent)
 {
-  //  startTimer(1);
   startTimer(16);
   setFocusPolicy(Qt::StrongFocus);
   setMouseTracking(true);
@@ -75,7 +74,7 @@ GLWidget::~GLWidget()
 {
   if( hosts != NULL ) {
     for(Inputs::iterator it = hosts->begin(); it != hosts->end(); ++it)
-      (*it)->end();
+      (*it)->endProcessing();
   }
 }
 
@@ -342,7 +341,7 @@ void GLWidget::resizeGL(int width, int height) {
 void GLWidget::keyPressEvent(QKeyEvent *event) {
   if( event->key() == Qt::Key_Escape ) {
     for(Inputs::iterator it = hosts->begin(); it != hosts->end(); ++it)
-      (*it)->end();
+      (*it)->endProcessing();
     hosts = NULL;
     QApplication::exit(1);
   } else if( event->key() == Qt::Key_Space ) {

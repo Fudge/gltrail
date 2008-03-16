@@ -21,8 +21,6 @@ public:
 protected:
   void run();
 
-
-
 private:
   Inputs *hosts;
   Elements *elements;

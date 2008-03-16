@@ -25,8 +25,11 @@
 #include "window.h"
 #include "input.h"
 #include "inputs/ssh.h"
+#include "inputs/digg.h"
 
 Inputs inputs;
+
+using namespace std;
 
 Window::Window(QWidget *parent)
  : QWidget(parent)
@@ -59,57 +62,74 @@ void Window::readSettings(GLWidget *gl) {
     configFile = QCoreApplication::arguments().at(1);
   }
 
-  std::cout << "Reading config[" << configFile.toStdString() << "]" << std::endl;
+  if( configFile == "--digg" ) {
+    cout << "Pulling from Digg..." << endl;
 
+    Digg *d = new Digg(this);
 
-  QSettings settings(configFile, QSettings::IniFormat);
+    d->setGLWidget(gl);
+    d->setDomain("digg.com");
+    d->setAutoPurge(true);
+    d->setColor( "#7777FF" );
 
-  settings.beginGroup("hosts");
-  QStringList rels = settings.allKeys();
-  settings.endGroup();
+    gl->setShowLines(0);
+    gl->setShowSize(4);
 
-  for( int i = 0; i < rels.size(); i++ ) {
-    QString hostName = rels.at(i);
+    d->start();
+
+    inputs << d;
+
+  } else {
+    std::cout << "Reading config[" << configFile.toStdString() << "]" << std::endl;
+
+    QSettings settings(configFile, QSettings::IniFormat);
 
     settings.beginGroup("hosts");
-    QString domain = settings.value(hostName).toString();
-    std::cout << "Reading [" << domain.toStdString() << "]" << std::endl;
+    QStringList rels = settings.allKeys();
     settings.endGroup();
 
-    SSH *h = new SSH(this);
-    settings.beginGroup(domain);
-    h->setHost(hostName);
-    h->setDomain(domain);
-    h->setUser( settings.value("user").toString() );
-    h->setPort( settings.value("port").toString() );
-    h->setCommand( settings.value("command").toString() );
-    h->setArgs( settings.value("args").toString() );
-    h->setPattern( settings.value("pattern").toString() );
-    h->setIgnore( settings.value("ignore").toString() );
-    h->setColor( settings.value("color").toString() );
-    h->setIgnoreQueryParameters( settings.value("ignore_url_params").toBool() );
-    h->setAutoPurge( settings.value("auto_purge").toBool() );
+    for( int i = 0; i < rels.size(); i++ ) {
+      QString hostName = rels.at(i);
 
-    QStringList keys = settings.childKeys();
-    for( int i = 0; i < keys.size(); i++ ) {
-      if( keys[i].startsWith("replace_") ) {
-        QString pattern = settings.value(keys[i]).toString();
-        QString str     = keys[i];
-        str.replace("replace_", "");
-        if( pattern.startsWith("/") )
-          str = "/" + str;
-        h->addReplacement( pattern,str );
+      settings.beginGroup("hosts");
+      QString domain = settings.value(hostName).toString();
+      std::cout << "Reading [" << domain.toStdString() << "]" << std::endl;
+      settings.endGroup();
+
+      SSH *h = new SSH(this);
+      settings.beginGroup(domain);
+      h->setHost(hostName);
+      h->setDomain(domain);
+      h->setUser( settings.value("user").toString() );
+      h->setPort( settings.value("port").toString() );
+      h->setCommand( settings.value("command").toString() );
+      h->setArgs( settings.value("args").toString() );
+      h->setPattern( settings.value("pattern").toString() );
+      h->setIgnore( settings.value("ignore").toString() );
+      h->setColor( settings.value("color").toString() );
+      h->setIgnoreQueryParameters( settings.value("ignore_url_params").toBool() );
+      h->setAutoPurge( settings.value("auto_purge").toBool() );
+
+      QStringList keys = settings.childKeys();
+      for( int i = 0; i < keys.size(); i++ ) {
+        if( keys[i].startsWith("replace_") ) {
+          QString pattern = settings.value(keys[i]).toString();
+          QString str     = keys[i];
+          str.replace("replace_", "");
+          if( pattern.startsWith("/") )
+            str = "/" + str;
+          h->addReplacement( pattern,str );
+        }
       }
+
+      h->setGLWidget(gl);
+
+      settings.endGroup();
+      std::cout << "Read [" << hostName.toStdString() << "]" << std::endl;
+
+      h->startProcessing();
+      inputs << h;
     }
-
-    h->setGLWidget(gl);
-
-    settings.endGroup();
-    std::cout << "Read [" << hostName.toStdString() << "]" << std::endl;
-
-    inputs << h;
-    h->start();
   }
-
 }
 

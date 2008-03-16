@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void SSH::start(void) {
+void SSH::startProcessing(void) {
   proc = new QProcess( this );
 
   proc->setProcessChannelMode(QProcess::SeparateChannels);
@@ -20,7 +20,7 @@ void SSH::start(void) {
 }
 
 
-void SSH::end( void ) {
+void SSH::endProcessing( void ) {
   cout << "Terminating[" << domain.toStdString() << "]" << endl;
   proc->terminate();
   proc->waitForFinished(2000);
@@ -58,12 +58,11 @@ void SSH::readFromStdout(void ) {
 
       if( rx.indexIn(buf) > -1 ) {
         QString url = rx.cap(1);
+        QString referrer = rx.cap(2);
 
         if( url.contains(" ") ) {
           url = url.split(" ")[1];
         }
-
-        QString referrer = rx.cap(2);
 
         if( ignoreQueryParameters() )
           url = url.split("?")[0];

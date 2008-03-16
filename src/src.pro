@@ -1,4 +1,4 @@
-QT += opengl
+QT += opengl network
 CONFIG += debug
 
 SOURCES += main.cpp \
@@ -7,7 +7,9 @@ SOURCES += main.cpp \
            window.cpp \
            glwidget.cpp \
            background_updater.cpp \
-           inputs/ssh.cpp
+           input.cpp \
+           inputs/ssh.cpp \
+           inputs/digg.cpp
 
 HEADERS += input.h \
            element.h \
@@ -16,16 +18,14 @@ HEADERS += input.h \
            window.h \
            glwidget.h \
            background_updater.h \
-           inputs/ssh.h
-
+           inputs/ssh.h \
+           inputs/digg.h
 
 TEMPLATE = app
 
 CONFIG += warn_on \
           thread \
           qt \
-          debug \
-          opengl
 
 TARGET = ../bin/gltrail
 
