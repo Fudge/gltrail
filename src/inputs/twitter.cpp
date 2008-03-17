@@ -51,34 +51,36 @@ void Twitter::run( void ) {
 
       if( t.id > curId && tweets.size() > 0 ) {
 
-	curId = t.id;
+        curId = t.id;
 
         gl->addRelation(this, t.title, t.user, true);
 
-	if(t.title.contains("@")) {
-	  // Tweet directed at someone
-	  QString targetPattern("@([^: ]+)");
-	  QRegExp rx(targetPattern);
-	  if( rx.indexIn( t.title ) > -1 ) {
-	    QString target = rx.cap(1);
-	    
-	    gl->addRelation(this, target, t.title, true);
-	  }
-	}
+        if(t.title.contains("@")) {
+          // Tweet directed at someone
+          QString targetPattern("@([^: ]+)");
+          QRegExp rx(targetPattern);
+          if( rx.indexIn( t.title ) > -1 ) {
+            QString target = rx.cap(1);
+
+            gl->addRelation(this, target, t.title, true);
+          }
+        }
 
         tweets.removeLast();
         if( tweets.size() > 0 ) {
           t = tweets.last();
         }
       } else {
-	tweets.removeLast();
+        while( tweets.last().id <= curId && tweets.size() > 0 ) {
+          tweets.removeLast();
+        }
       }
-      
+
     }
 
     fetch++;
 
-    if( fetch % 20 == 0 ) {
+    if( fetch % 30 == 0 ) {
       fetchTweets();
     }
 
@@ -87,7 +89,7 @@ void Twitter::run( void ) {
     //    }
 
 
-    sleep(2);
+    sleep(1);
   }
 }
 
@@ -110,31 +112,31 @@ void Twitter::parse( bool error ) {
     QRegExp rxId(idPattern);
 
     Tweet t;
-    
+
     for( int i = 0; i < lines.size(); i++ ) {
 
       if( lines[i].contains("<status>") ) {
-	t.id = 0;
-	t.title = "";
-	t.user = "";
+        t.id = 0;
+        t.title = "";
+        t.user = "";
       }
 
       if( rx.indexIn( lines[i] ) > -1 ) {
-	t.title = QTextDocumentFragment::fromHtml(rx.cap(1)).toPlainText();
+        t.title = QTextDocumentFragment::fromHtml(rx.cap(1)).toPlainText();
       } else if( rxUser.indexIn( lines[i] ) > -1 ) {
-	cout << "<screen_name>" << endl;
-	t.user = rxUser.cap(1);
+        cout << "<screen_name>" << endl;
+        t.user = rxUser.cap(1);
       } else if( rxId.indexIn( lines[i] ) > -1 && t.id == 0) {
-	t.id = rxId.cap(1).toLong();
+        t.id = rxId.cap(1).toLong();
       }
 
       if( lines[i].contains("</status>") ) {
 
-	cout << t.id << "," << t.user.toStdString() << "," << t.title.toStdString() << endl;
+        cout << t.id << "," << t.user.toStdString() << "," << t.title.toStdString() << endl;
 
-	tweets << t;
+        tweets << t;
       }
-	
+
     }
 
   } else {
