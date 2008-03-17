@@ -88,7 +88,6 @@ void Digg::run( void ) {
       }
 
       while( d.date <= curDate && duggQueue.size() > 0 ) {
-        curDate = d.date;
         gl->addRelation(this, d.story, d.user, true);
 
         duggQueue.removeFirst();
