@@ -26,6 +26,7 @@
 #include "input.h"
 #include "inputs/ssh.h"
 #include "inputs/digg.h"
+#include "inputs/twitter.h"
 
 Inputs inputs;
 
@@ -78,6 +79,23 @@ void Window::readSettings(GLWidget *gl) {
     d->start();
 
     inputs << d;
+
+  } else if( configFile == "--twitter" ) {
+    cout << "Pulling from Twitter..." << endl;
+
+    Twitter *t = new Twitter(this);
+
+    t->setGLWidget(gl);
+    t->setDomain("twitter.com");
+    t->setAutoPurge(true);
+    t->setColor( "#7777FF" );
+
+    gl->setShowLines(0);
+    gl->setShowSize(4);
+
+    t->start();
+
+    inputs << t;
 
   } else {
     std::cout << "Reading config[" << configFile.toStdString() << "]" << std::endl;

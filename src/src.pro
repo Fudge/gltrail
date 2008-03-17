@@ -9,7 +9,8 @@ SOURCES += main.cpp \
            background_updater.cpp \
            input.cpp \
            inputs/ssh.cpp \
-           inputs/digg.cpp
+           inputs/digg.cpp \ 
+           inputs/twitter.cpp
 
 HEADERS += input.h \
            element.h \
@@ -19,7 +20,8 @@ HEADERS += input.h \
            glwidget.h \
            background_updater.h \
            inputs/ssh.h \
-           inputs/digg.h
+           inputs/digg.h \
+           inputs/twitter.h 
 
 TEMPLATE = app
 
