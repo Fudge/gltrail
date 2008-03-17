@@ -98,10 +98,7 @@ void Digg::run( void ) {
   fetchDiggs();
   forever {
 
-    cout << "http: " << http->hasPendingRequests() << endl;
-    cout << "httpImages: " << httpImages->hasPendingRequests() << endl;
-
-    if( duggQueue.size() > 0 && curDate > 20) {
+    if( duggQueue.size() > 0 && curDate > 5) {
       cout << duggQueue.size() << " pending diggs" << endl;
 
       Dugg d = duggQueue.first();
@@ -119,8 +116,6 @@ void Digg::run( void ) {
         } else {
           if( images[d.image] == NULL )
             cout << "Adding rel with MISSING image[" << d.image.toStdString() << "]" << endl;
-          else
-            cout << "Adding rel with image[" << d.image.toStdString() << "]" << endl;
 
           gl->addRelation(this, d.story, d.user, true, images[d.image] );
         }

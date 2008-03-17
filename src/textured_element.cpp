@@ -44,16 +44,40 @@ TexturedElement::~TexturedElement()
 }
 
 void TexturedElement::render(GLWidget *gl) {
+
   GLfloat r = 0.004 + (size - 1.0) / 100;
+  bool hover = fabs(gl->getX() - x) <= r*1.5f && fabs(gl->getY() - y) <= r * 1.5f;
+
+  if(hover) {
+    if( gl->getSelected() == NULL )
+      gl->setSelected(this);
+    glColor4f(1.0, 1.0, 1.0, 1.0);
+    size = 5.0;
+    r = 0.004 + (10.0 - 1.0) / 100;
+   } else {
+    if( activities.size() > 0 ) {
+      glColor4f(1.0, 1.0, 1.0, 1.0);
+    } else {
+      glColor4f(0.75, 0.75, 0.75, 0.75);
+    }
+  }
+
+
+
 
   if( texId == 0 && image != NULL ) {
     cout << "Binding TexturedElement[" << image->width() << "x" << image->height() << "]" << endl;
-    texId = gl->bindTexture(*image);
-    cout << "Binding as " << texId << endl;
+
+    if( image->width() == 0 || image->height() == 0 ) {
+      texId = -1;
+      cout << "Ignored";
+    } else {
+      texId = gl->bindTexture(*image);
+      cout << "Binding as " << texId << endl;
+    }
   }
 
   if( texId > 0 ) {
-    glColor4f(1.0, 1.0, 1.0, 1.0);
     glBindTexture(GL_TEXTURE_2D, texId);
     glBegin(GL_QUADS);
 
@@ -70,6 +94,15 @@ void TexturedElement::render(GLWidget *gl) {
     glVertex3d( x-r, y+r, 0.0);
 
     glEnd();
+
+    if( showInfo > 0 || hover ) {
+      QString info = QString("[%1] %2").arg( QString::number(realSize).left(5) ).arg(name().left(50));
+      glColor4f(1.0, 1.0, 1.0, 1.0);
+      int xi =  (int) ((1.0 + x) / 2.0 * gl->getWidth()) - info.length() * 3;
+      int xy =  (int) (( gl->getAspect() - y) / (2 * gl->getAspect()) * gl->getHeight() - gl->getHeight() * 0.05 );
+
+      gl->renderText(xi,xy, info );
+    }
 
     if( activity_queue.size() > 0 && rand() % (60/activity_queue.size()) == 0 ) {
 
