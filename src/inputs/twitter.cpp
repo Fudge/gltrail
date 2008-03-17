@@ -55,6 +55,17 @@ void Twitter::run( void ) {
 
         gl->addRelation(this, t.title, t.user, true);
 
+	if(t.title.contains("@")) {
+	  // Tweet directed at someone
+	  QString targetPattern("@([^: ]+)");
+	  QRegExp rx(targetPattern);
+	  if( rx.indexIn( t.title ) > -1 ) {
+	    QString target = rx.cap(1);
+	    
+	    gl->addRelation(this, target, t.title, true);
+	  }
+	}
+
         tweets.removeLast();
         if( tweets.size() > 0 ) {
           t = tweets.last();
