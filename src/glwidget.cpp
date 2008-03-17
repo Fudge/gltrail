@@ -136,7 +136,6 @@ void GLWidget::initializeGL()
    glVertex3f(0.0, r, 0.0);
    glEnd();
    glEndList();
-
 }
 
 void GLWidget::paintGL()
@@ -409,12 +408,19 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
   //  cout << "x: " << x << ", y: " << y << endl;
 }
 
-void GLWidget::addRelation(Input *h, QString &url, QString &ref, bool external) {
+void GLWidget::addRelation(Input *h, QString &url, QString &ref, bool external, QImage *img) {
 
   if( elements.contains(h->getDomain() + url) == false ) {
     QColor color = h->getColor();
-    elements[h->getDomain() + url] = new TexturedElement(this, h, url, color);
-    nodes.push_back( elements[h->getDomain() + url] );
+    Element *e;
+    if( img != NULL ) {
+      cout << "addRelation image[" << img->width() << "x" << img->height() << "]" << endl;
+      e = new TexturedElement(this, h, url, color, img);
+    } else {
+      e = new Element(h, url, color);
+    }
+    elements[h->getDomain() + url] = e;
+    nodes.push_back( e );
   }
 
   if( ref != "-" && !ref.isEmpty() ) {

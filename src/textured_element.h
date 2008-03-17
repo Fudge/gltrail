@@ -32,7 +32,7 @@
 class TexturedElement : public Element {
 
 public:
-  TexturedElement(GLWidget *glWidget, Input *h, QString name, QColor col, bool referrer = false);
+  TexturedElement(GLWidget *glWidget, Input *h, QString name, QColor col, QImage *img, bool referrer = false);
 
  ~TexturedElement();
 
@@ -42,7 +42,7 @@ public:
  private:
   GLuint texId;
   GLWidget *gl;
-
+  QImage *image;
 };
 
 

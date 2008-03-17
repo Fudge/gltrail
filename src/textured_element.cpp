@@ -24,14 +24,18 @@
 
 using namespace std;
 
-TexturedElement::TexturedElement(GLWidget *glWidget, Input *h, QString name, QColor col, bool referrer)
+TexturedElement::TexturedElement(GLWidget *glWidget, Input *h, QString name, QColor col, QImage *img, bool referrer)
   : Element(h, name, col, referrer)
 {
+  cout << "Creating textured..." << endl;
   gl = glWidget;
+  image = img;
+  texId = 0;
 
-  QImage img("/home/erlends/src/ruby/cit/public/images/add.png");
+  if( image != NULL ) {
+    cout << "TexturedElement[" << image->width() << "x" << image->height() << "]" << endl;
+  }
 
-  texId = gl->bindTexture(img);
 }
 
 TexturedElement::~TexturedElement()
@@ -42,46 +46,55 @@ TexturedElement::~TexturedElement()
 void TexturedElement::render(GLWidget *gl) {
   GLfloat r = 0.004 + (size - 1.0) / 100;
 
-
-  glColor4f(1.0, 1.0, 1.0, 1.0);
-  glBindTexture(GL_TEXTURE_2D, texId);
-  glBegin(GL_QUADS);
-
-  glTexCoord2d(0,0);
-  glVertex3d( x-r, y-r, 0.0);
-
-  glTexCoord2d(1,0);
-  glVertex3d( x+r, y-r, 0.0);
-  
-  glTexCoord2d(1,1);
-  glVertex3d( x+r, y+r, 0.0);
-
-  glTexCoord2d(0,1);
-  glVertex3d( x-r, y+r, 0.0);
-
-  glEnd();
-
-  if( activity_queue.size() > 0 && rand() % (60/activity_queue.size()) == 0 ) {
-    
-    Activity *a = activity_queue.takeFirst();
-    activities << a;
-    if( gl->useRecoil() ) {
-      a->fire();
-    }
+  if( texId == 0 && image != NULL ) {
+    cout << "Binding TexturedElement[" << image->width() << "x" << image->height() << "]" << endl;
+    texId = gl->bindTexture(*image);
+    cout << "Binding as " << texId << endl;
   }
 
-  glBegin(GL_POINTS);
-  for(Activities::iterator it = activities.begin(); it != activities.end(); ++it) {
-    if( (*it)->render(gl) ) {
+  if( texId > 0 ) {
+    glColor4f(1.0, 1.0, 1.0, 1.0);
+    glBindTexture(GL_TEXTURE_2D, texId);
+    glBegin(GL_QUADS);
+
+    glTexCoord2d(0,0);
+    glVertex3d( x-r, y-r, 0.0);
+
+    glTexCoord2d(1,0);
+    glVertex3d( x+r, y-r, 0.0);
+
+    glTexCoord2d(1,1);
+    glVertex3d( x+r, y+r, 0.0);
+
+    glTexCoord2d(0,1);
+    glVertex3d( x-r, y+r, 0.0);
+
+    glEnd();
+
+    if( activity_queue.size() > 0 && rand() % (60/activity_queue.size()) == 0 ) {
+
+      Activity *a = activity_queue.takeFirst();
+      activities << a;
       if( gl->useRecoil() ) {
-	(*it)->impact();
+        a->fire();
       }
-      delete *it;
-      it = activities.erase(it);
     }
+
+    glBegin(GL_POINTS);
+    for(Activities::iterator it = activities.begin(); it != activities.end(); ++it) {
+      if( (*it)->render(gl) ) {
+        if( gl->useRecoil() ) {
+          (*it)->impact();
+        }
+        delete *it;
+        it = activities.erase(it);
+      }
+    }
+    glEnd();
+    glPointSize(1.0);
+  } else {
+    Element::render(gl);
   }
-  glEnd();
-  glPointSize(1.0);
 }
 
 void TexturedElement::renderRelations(GLWidget *gl) {

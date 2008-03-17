@@ -70,7 +70,7 @@ public:
    QSize minimumSizeHint() const;
    QSize sizeHint() const;
 
-   void addRelation(Input *h, QString &url, QString &ref, bool external = false);
+   void addRelation(Input *h, QString &url, QString &ref, bool external = false, QImage *img = NULL);
 
    int  showLines() { return linesMode; };
    bool showForces() const { return forces; };
