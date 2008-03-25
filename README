@@ -5,6 +5,7 @@
    (and replace with your information)
 4. ./bin/gltrail gltrail.ini
    ./bin/gltrail --digg
+   ./bin/gltrail --twitter
 
 Note: You'll need public-key ssh access set up to your servers,
       as I haven't found a good/free cross-platform ssh library.
