@@ -20,11 +20,15 @@ using namespace std;
 
 
 Digg::Digg(QObject *parent) {
-  http = new QHttp(this);
+  http = new QHttp("services.digg.com", 80, this);
 
-  connect(http, SIGNAL(done(bool)),
-          this, SLOT(parse(bool)) );
+  connect(http, SIGNAL(requestFinished(int,bool)),
+          this, SLOT(parse(int,bool)) );
 
+  httpImages = new QHttp("digg.com", 80, this);
+
+  connect(httpImages, SIGNAL(requestFinished(int,bool)),
+          this, SLOT(getImage(int,bool)) );
 
   maxDate = 0;
   curDate = 0;
@@ -46,7 +50,7 @@ void Digg::fetchDiggs( void ) {
   header.setValue("Host", "services.digg.com");
   header.setValue("User-Agent", "glTrail v0.01 (http://www.fudgie.org/gltrail.html)" );
 
-  http->setHost("services.digg.com");
+  //  http->setHost("services.digg.com");
 
   cout << "Fetching[" << url.toString().toStdString() << "]" << endl;
 
@@ -64,7 +68,7 @@ void Digg::fetchStory( QString story ) {
   header.setValue("Host", "services.digg.com");
   header.setValue("User-Agent", "glTrail v0.01 (http://www.fudgie.org/gltrail.html)" );
 
-  http->setHost("services.digg.com");
+  //  http->setHost("services.digg.com");
 
   cout << "Fetching[" << url.toString().toStdString() << "]" << endl;
 
@@ -72,23 +76,49 @@ void Digg::fetchStory( QString story ) {
 }
 
 
+void Digg::fetchImage( QString img ) {
+  QUrl url;
+  url.setPath(img );
+
+  QHttpRequestHeader header("GET", url.toString() );
+
+  header.setValue("Host", "digg.com");
+  header.setValue("User-Agent", "glTrail v0.01 (http://www.fudgie.org/gltrail.html)" );
+
+  //  http->setHost("services.digg.com");
+
+  cout << "Fetching[" << url.toString().toStdString() << "]" << endl;
+
+  httpImages->request(header);
+}
+
+
 void Digg::run( void ) {
 
   fetchDiggs();
   forever {
-    if( duggQueue.size() > 0 ) {
+
+    if( duggQueue.size() > 0 && curDate > 5) {
       cout << duggQueue.size() << " pending diggs" << endl;
 
       Dugg d = duggQueue.first();
 
-      cout << d.date << " <=> " << curDate << endl;
+      cout << d.date << " <= " << curDate << endl;
 
       if( d.date > curDate + 5 ) {
         curDate = d.date;
       }
 
       while( d.date <= curDate && duggQueue.size() > 0 ) {
-        gl->addRelation(this, d.story, d.user, true);
+
+        if( d.image.isEmpty() ) {
+          gl->addRelation(this, d.story, d.user, true);
+        } else {
+          if( images[d.image] == NULL )
+            cout << "Adding rel with MISSING image[" << d.image.toStdString() << "]" << endl;
+
+          gl->addRelation(this, d.story, d.user, true, images[d.image] );
+        }
 
         duggQueue.removeFirst();
         if( duggQueue.size() > 0 ) {
@@ -110,16 +140,32 @@ void Digg::run( void ) {
       }
     }
 
-    if( curDate > 0 ) {
-      curDate += 1;
-    }
-
+    curDate += 1;
     sleep(1);
   }
 }
 
-void Digg::parse( bool error ) {
+void Digg::getImage( int id, bool error ) {
+  if(!error) {
+    cout << "Got image[" << httpImages->currentRequest().path().toStdString() << "]" << endl;
+    QByteArray buf = httpImages->readAll();
+    if( !images.contains(httpImages->currentRequest().path()) ) {
+      QImage *img = new QImage();
+      img->loadFromData(buf);
+      images.insert( httpImages->currentRequest().path(), img);
+      cout << "Added width: " << img->width() << ", height: " << img->height() << endl;
+    } else {
+      cout << "Already in cache[" << httpImages->currentRequest().path().toStdString() << "]" << endl;
+    }
+  } else {
+    cout << "Error getting [" << httpImages->currentRequest().path().toStdString() << "]" << endl;
+  }
+}
+
+void Digg::parse( int id, bool error ) {
   if( !error ) {
+    cout << "Got[" << http->currentRequest().path().toStdString() << "]" << endl;
+
     QString result = http->readAll();
     //    cout << "Got " << result.toStdString() << endl;
 
@@ -160,29 +206,35 @@ void Digg::parse( bool error ) {
 
         QString id;
         QString title;
+        QString image;
 
         QString storyPattern("<story id=\"(\\d+)\" link=\"([^\"]+)\".*diggs=\"(\\d+)\" comments=\"(\\d+)\"");
         QString titlePattern("<title>(.*)</title>");
-        //        cout << "pattern[" << storyPattern.toStdString() << "]" << endl;
+        QString imagePattern("<thumbnail .* src=\"([^\"]+)\"");
 
         QRegExp rx(storyPattern);
         QRegExp rxTitle(titlePattern);
+        QRegExp rxImage(imagePattern);
 
         for( int i = 2; i < lines.size(); i++ ) {
           if( rx.indexIn(lines[i]) > -1 ) {
             id = rx.cap(1);
           } else if( rxTitle.indexIn(lines[i]) > -1 ) {
             title = rxTitle.cap(1);
+          } else if( rxImage.indexIn(lines[i]) > -1 ) {
+            image = rxImage.cap(1);
+            fetchImage(image);
           }
         }
 
-        cout << "id[" << id.toStdString() << "], title[" << title.toStdString() << "]" << endl;
+        cout << "id[" << id.toStdString() << "], title[" << title.toStdString() << "], image[" << image.toStdString() << "]" << endl;
 
         if( !id.isEmpty() && !title.isEmpty() ) {
           stories.insert(id, title);
           d.story = title;
+          d.image = image;
+          duggQueue << d;
         }
-        duggQueue << d;
       }
     }
 

@@ -4,6 +4,7 @@ CONFIG += debug
 SOURCES += main.cpp \
            activity.cpp \
            element.cpp \
+           textured_element.cpp \
            window.cpp \
            glwidget.cpp \
            background_updater.cpp \
@@ -14,6 +15,7 @@ SOURCES += main.cpp \
 
 HEADERS += input.h \
            element.h \
+           textured_element.h \
            activity.h \
            relation.h \
            window.h \

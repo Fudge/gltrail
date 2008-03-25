@@ -36,7 +36,7 @@
 /**
         @author Erlend Simonsen <mr@fudgie.org>
 */
-class Element{
+class Element {
 
 public:
   Element() {};
@@ -44,11 +44,12 @@ public:
 
   virtual ~Element();
 
-  void render(GLWidget *gl);
-  void renderRelations(GLWidget *gl);
+  virtual void render(GLWidget *gl);
+  virtual void renderRelations(GLWidget *gl);
 
   void update(GLWidget *gl);
   void update_stats(void);
+
   bool contains(GLWidget *gl, Element *e);
   void repulsive_check(GLWidget *gl, Element *e);
   void attractive_check(GLWidget *gl, Element *e);

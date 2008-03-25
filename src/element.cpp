@@ -153,7 +153,7 @@ void Element::update_stats(void) {
   if( wantedSize < 1.0 )
     wantedSize = 1.0;
 
-  radius = CUTOFF * size * 0.5;
+  radius = CUTOFF * size / 2;
 
   if( showInfo > 0 ) {
     showInfo--;
